@@ -1511,6 +1511,7 @@ kbd {
   overflow-y: auto;
   padding: 0;
   scroll-behavior: smooth;
+  position: relative;
 }
 
 .reader-content {
@@ -1520,12 +1521,15 @@ kbd {
 
 /* ── Reader Loading Spinner ── */
 .reader-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 1rem;
-  padding: 5rem 2rem;
+  background: var(--bg-panel);
   color: var(--text-muted);
   font-size: 0.9rem;
 }

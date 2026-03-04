@@ -604,27 +604,11 @@
     elR.markRead.classList.toggle('btn-quiz--done', isRead);
   }
 
-  function clearReaderContent() {
-    /* Remove everything from readerContent except the loading spinner */
-    for (let i = elR.content.childNodes.length - 1; i >= 0; i--) {
-      const node = elR.content.childNodes[i];
-      if (node !== elR.loading) elR.content.removeChild(node);
-    }
-  }
-
-  function showReaderLoading() {
-    clearReaderContent();
-    elR.loading.removeAttribute('hidden');
-    if (!elR.content.contains(elR.loading)) elR.content.appendChild(elR.loading);
-    if (elR.body) elR.body.scrollTop = 0;
-  }
-
-  function hideReaderLoading() {
-    elR.loading.setAttribute('hidden', '');
-  }
-
   function loadMarkdown(topic) {
-    showReaderLoading();
+    /* Show spinner, clear previous content */
+    elR.loading.removeAttribute('hidden');
+    elR.content.innerHTML = '';
+    if (elR.body) elR.body.scrollTop = 0;
 
     if (mdCache[topic.path]) {
       renderMarkdown(mdCache[topic.path]);
@@ -633,7 +617,7 @@
 
     fetch(topic.path)
       .then(r => {
-        if (!r.ok) throw new Error(`HTTP ${r.status} — could not load file`);
+        if (!r.ok) throw new Error('HTTP ' + r.status);
         return r.text();
       })
       .then(md => {
@@ -641,20 +625,17 @@
         renderMarkdown(md);
       })
       .catch(err => {
-        hideReaderLoading();
-        const errDiv = document.createElement('div');
-        errDiv.style.cssText = 'padding:2.5rem 2rem;text-align:center;color:var(--text-muted);';
+        elR.loading.setAttribute('hidden', '');
         const ghPath = topic.path.replace(/^\.\.\//, '');
-        errDiv.innerHTML = `
-          <p style="font-size:2rem;margin:0 0 0.75rem">😔</p>
-          <p style="font-weight:600;color:var(--text);margin:0 0 0.4rem">Could not load content</p>
-          <p style="font-size:0.85rem;opacity:0.7;margin:0 0 1.25rem">${esc(err.message)}</p>
-          <a href="https://github.com/Ali-Meh619/System_Design_Principles/blob/main/${esc(ghPath)}"
-             target="_blank" rel="noopener noreferrer"
-             style="color:var(--primary);text-decoration:underline;">
-            View on GitHub →
-          </a>`;
-        elR.content.appendChild(errDiv);
+        elR.content.innerHTML =
+          '<div style="padding:2.5rem 2rem;text-align:center;color:var(--text-muted)">' +
+          '<p style="font-size:2rem;margin:0 0 .75rem">&#x1F615;</p>' +
+          '<p style="font-weight:600;color:var(--text);margin:0 0 .4rem">Could not load content</p>' +
+          '<p style="font-size:.85rem;opacity:.7;margin:0 0 1.25rem">' + esc(err.message) + '</p>' +
+          '<a href="https://github.com/Ali-Meh619/System_Design_Principles/blob/main/' + esc(ghPath) + '"' +
+          ' target="_blank" rel="noopener noreferrer"' +
+          ' style="color:var(--primary);text-decoration:underline">View on GitHub \u2192</a>' +
+          '</div>';
       });
   }
 
@@ -666,8 +647,8 @@
   })();
 
   function renderMarkdown(md) {
-    hideReaderLoading();
-    clearReaderContent();
+    /* Hide spinner — it's a sibling of readerContent so content is independent */
+    elR.loading.setAttribute('hidden', '');
 
     const wrapper = document.createElement('div');
 
@@ -676,13 +657,13 @@
         wrapper.innerHTML = marked.parse(md);
       } catch (_) {
         const pre = document.createElement('pre');
-        pre.style.cssText = 'white-space:pre-wrap;padding:1.5rem;line-height:1.6;font-size:0.9rem;';
+        pre.style.cssText = 'white-space:pre-wrap;padding:1.5rem;line-height:1.6;font-size:.9rem';
         pre.textContent = md;
         wrapper.appendChild(pre);
       }
     } else {
       const pre = document.createElement('pre');
-      pre.style.cssText = 'white-space:pre-wrap;padding:1.5rem;line-height:1.6;font-size:0.9rem;';
+      pre.style.cssText = 'white-space:pre-wrap;padding:1.5rem;line-height:1.6;font-size:.9rem';
       pre.textContent = md;
       wrapper.appendChild(pre);
     }

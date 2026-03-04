@@ -1,107 +1,114 @@
 # Networking & Concurrency
 
-The protocols and models that determine how your services talk to each other and how many requests a single server can handle.
+> How data moves between servers and how servers handle simultaneous requests. TCP vs UDP, HTTP versions, and Thread vs Event Loop models.
 
 ---
 
 ## TCP vs UDP
 
-| | TCP | UDP |
-|--|-----|-----|
-| **Connection** | Connection-oriented (3-way handshake) | Connectionless |
-| **Delivery** | Guaranteed, ordered, no duplicates | Best-effort, unordered, may duplicate |
-| **Flow control** | Yes — sender slows down if receiver is overwhelmed | No |
-| **Overhead** | Higher (headers, ACKs, retransmits) | Minimal |
-| **Latency** | Higher (handshake + ACK round trips) | Lower |
-| **Use cases** | HTTP/HTTPS, databases, file transfer, email | Video streaming, gaming, DNS, VoIP, WebRTC |
+**Transport Layer Protocols**
 
-**Interview rule:** Default to TCP. Use UDP only when:
-1. You need the absolute lowest latency and can tolerate occasional loss (video/audio streaming, multiplayer gaming).
-2. You need broadcast/multicast (single packet → many receivers).
-3. Your protocol is simple enough to implement its own reliability on top of UDP (QUIC/HTTP/3 does this).
+| Protocol | Mechanism | Pros | Cons | Use Case |
+|----------|-----------|------|------|----------|
+| **TCP** | Connection-oriented. 3-way handshake. Guarantees order and delivery (retransmits lost packets). | Reliable. No data loss. Ordered. | Slow start (handshake). Head-of-line blocking (one lost packet delays everything). Overhead. | Web (HTTP), Email, File Transfer, Database connections. |
+| **UDP** | Connectionless. Fire-and-forget. Packets sent individually. | Lowest latency. No handshake. No retransmission delays. | Unreliable. Packets can arrive out of order or be lost. | Video streaming (zoom), Gaming, DNS, Voice over IP (VoIP). |
 
 ---
 
 ## HTTP Protocols (1.1 vs 2 vs 3)
 
-### HTTP/1.1
-- **One request per TCP connection** (without pipelining, which browsers disabled due to head-of-line blocking).
-- Browsers open 6 parallel connections per domain as a workaround.
-- Text-based headers (verbose, repeated on every request).
-- **Head-of-line blocking:** If one request stalls, it blocks all requests on that connection.
+The web is built on HTTP, but the version matters for performance.
 
-### HTTP/2
-- **Multiplexing:** Multiple requests/responses interleaved over a single TCP connection.
-- **Header compression** (HPACK): Repeated headers like `User-Agent` are compressed, reducing overhead 60–70%.
-- **Server push:** Server can proactively send resources the client will need (e.g., push CSS before client asks).
-- **Streams:** Each request is a stream with a priority weight.
-- **Still has TCP head-of-line blocking:** A single lost TCP packet stalls all multiplexed streams.
-- Widely supported; the default in modern systems.
+- **HTTP/1.1:** Text-based. One request per connection (unless pipelined, which is rare). "Keep-alive" reuses connection but suffers from **Head-of-Line Blocking** (slow request blocks subsequent ones).
+- **HTTP/2:** Binary. **Multiplexing** allows multiple requests/responses in parallel over a single TCP connection. Server Push. Solves HTTP/1.1 blocking but still suffers from TCP blocking.
+- **HTTP/3 (QUIC):** Built on UDP. Solves TCP Head-of-Line blocking. Faster connection setup (0-RTT). Better for mobile networks (switching Wi-Fi to 4G without reconnecting).
 
-### HTTP/3 (QUIC)
-- **Built on UDP + QUIC** (Quick UDP Internet Connections — Google-developed protocol).
-- **No TCP head-of-line blocking:** Lost packets only block the specific stream, not all streams.
-- **Faster connection setup:** QUIC + TLS 1.3 handshake combined = 1 RTT (HTTP/2 = 2 RTTs for TCP + TLS).
-- **Connection migration:** If your IP changes (mobile switching from WiFi to cellular), connection survives because QUIC connections are identified by connection ID, not IP:port.
-- Used by: YouTube, Google Search, Facebook, Cloudflare.
-- **Best for:** Mobile users with variable connectivity. High-loss networks.
+**HTTP Version Comparison**
 
-| | HTTP/1.1 | HTTP/2 | HTTP/3 |
-|--|---------|--------|--------|
-| Transport | TCP | TCP | UDP (QUIC) |
-| Multiplexing | No | Yes | Yes |
-| Head-of-line blocking | Yes | TCP-level | No |
-| Header compression | No | HPACK | QPACK |
-| Connection setup | 2 RTT | 2 RTT | 1 RTT |
+| Version | Transport | Multiplexing | Head-of-Line Blocking | Best For |
+|---------|-----------|--------------|----------------------|----------|
+| HTTP/1.1 | TCP | No (one req per connection) | Yes — severe | Legacy systems |
+| HTTP/2 | TCP | Yes (multiple streams) | TCP-level blocking remains | Web APIs, gRPC |
+| HTTP/3 (QUIC) | UDP | Yes + independent streams | None | Mobile, global users, video |
 
 ---
 
 ## Concurrency Models (Server Architecture)
 
-How does a server handle thousands of simultaneous connections? The concurrency model determines throughput, memory usage, and complexity.
+How does your server handle 10,000 concurrent connections? This depends on the concurrency model.
 
-### Thread-per-Request
-One OS thread per active request. Thread blocks during I/O (waiting for database, upstream service).
+**Thread vs Event Loop**
 
-- **Pros:** Simple. Existing blocking libraries work unchanged.
-- **Cons:** OS threads consume ~1–8 MB stack each. At 10,000 concurrent requests, that's 10–80 GB RAM just for thread stacks. Context switching overhead.
-- **Best for:** CPU-bound workloads. Low-concurrency services. Legacy systems.
-- **Used by:** Traditional Java (Spring MVC), .NET MVC, Ruby on Rails with Puma.
-
-### Event Loop (Non-blocking I/O)
-Single thread processes events. When an I/O operation starts (network read, disk read), the thread registers a callback and immediately moves on to the next event. I/O completion triggers the callback.
-
-- **Pros:** One thread handles tens of thousands of concurrent connections with minimal memory.
-- **Cons:** CPU-bound tasks block the event loop, starving all other connections. Must use async/await or callbacks everywhere.
-- **Best for:** I/O-bound workloads with many concurrent connections (API servers, proxies, chat servers).
-- **Used by:** Node.js, Nginx, Redis, Go's net/http (with goroutines, similar semantics).
-
-### Worker Pool / Thread Pool
-Fixed pool of worker threads. Incoming requests queued. Available workers pick up requests.
-
-- **Pros:** Bounded resource usage. Works well when request processing is CPU-bound.
-- **Cons:** Queue depth can grow unbounded under load. Thread switching overhead.
-- **Used by:** Most web frameworks combine this with either model above.
-
-### Go Goroutines (M:N Threading)
-Go maps many lightweight goroutines onto fewer OS threads. Goroutines start at 8 KB (vs ~1 MB for OS threads). The Go scheduler parks goroutines during I/O and reuses OS threads.
-
-- **Result:** Get the simplicity of thread-per-request (blocking-style code) with the efficiency of an event loop.
-- **Used by:** Most modern Go services (Kubernetes, Docker, Caddy).
-
-### Interview answer framework
-> "This service is I/O bound — it makes multiple downstream calls and waits for responses. I'll use a non-blocking async model so one thread handles thousands of concurrent connections without the memory overhead of thread-per-request. For CPU-bound sections (image compression, crypto), I'll offload to a separate worker pool so they don't block the event loop."
+| Model | How it works | Memory | Best for | Examples |
+|-------|-------------|--------|----------|----------|
+| **Thread per Request** | Allocates a dedicated OS thread for each client connection. Blocks on IO. | High (1MB stack per thread). 10k users = 10GB RAM just for stacks. | CPU-bound tasks. Traditional blocking code. | Java (Spring Boot default), Apache Tomcat, Python (Flask/Django default). |
+| **Event Loop (Non-blocking I/O)** | Single thread handles all connections. "Call me back when DB responds." Never blocks. | Low. 10k users = minimal RAM. | IO-bound tasks (Waiting for DB/Network). High concurrency. | Node.js, Nginx, Redis. |
+| **Goroutines / Green Threads** | Lightweight user-space threads managed by runtime, not OS. Multiplexed onto OS threads. | Very Low (2KB stack). | High concurrency + Blocking-style code (easier to write). | Go (Golang), Elixir (Erlang processes). |
 
 ---
 
-## Key Protocols Summary
+## The C10K Problem
 
-| Protocol | Layer | Use |
-|----------|-------|-----|
-| TCP | Transport | Reliable ordered delivery |
-| UDP | Transport | Fast, loss-tolerant delivery |
-| HTTP/1.1, HTTP/2, HTTP/3 | Application | Web APIs, browsers |
-| gRPC | Application | Internal microservice RPC (uses HTTP/2) |
-| WebSocket | Application | Persistent bidirectional connection |
-| TLS 1.3 | Security | Encryption over TCP |
-| QUIC | Transport | Encrypted UDP (used by HTTP/3) |
+The "C10K problem" (10,000 concurrent connections) was a famous engineering challenge in the early 2000s. Traditional thread-per-connection servers couldn't scale beyond a few thousand concurrent clients due to memory exhaustion and context-switching overhead. The solutions:
+
+1. **Event-driven servers** (Nginx, Node.js) — handle thousands of connections in a single thread via async I/O.
+2. **Goroutines** (Go) — 2KB green threads that scale to millions on a single machine.
+3. **Connection pooling** — reuse connections rather than creating one per request.
+
+---
+
+## DNS & The Name Resolution Chain
+
+When a client connects to `api.example.com`, the full chain is:
+
+```
+1. Browser cache (instant — remembers from last visit)
+2. OS resolver cache (/etc/hosts, system DNS cache)
+3. Recursive DNS resolver (ISP or 8.8.8.8)
+4. Root nameserver (knows who manages .com)
+5. TLD nameserver (knows who manages example.com)
+6. Authoritative nameserver for example.com → returns IP address
+7. Browser connects to IP address
+```
+
+**DNS TTL** (Time To Live) controls how long caches store the result. Low TTL (60s) = fast failover but more DNS load. High TTL (3600s) = fewer queries but slow DNS-based failover.
+
+---
+
+## SSL/TLS Handshake
+
+Every HTTPS connection requires a TLS handshake before data can flow. Understanding this cost matters for system design:
+
+| Phase | What happens | Round trips |
+|-------|-------------|-------------|
+| TCP 3-way handshake | SYN → SYN-ACK → ACK | 1 RTT |
+| TLS 1.2 handshake | Client Hello → Server Hello → Certificate → Key Exchange | 2 RTT |
+| TLS 1.3 handshake | Client Hello → Server Hello (combined) | 1 RTT |
+| TLS 1.3 with 0-RTT | Session resumption — no extra roundtrip | 0 RTT |
+
+> 💡 **Tip:** API Gateways terminate TLS at the edge. Backend services receive plain HTTP internally, saving TLS overhead on every internal call. The API Gateway holds the SSL certificate.
+
+---
+
+## Network Topology in Data Centers
+
+| Layer | What it is | Latency |
+|-------|-----------|---------|
+| Same process (in-process call) | Function call | Nanoseconds |
+| Same machine (loopback) | localhost connection | ~0.1ms |
+| Same rack (top-of-rack switch) | Intra-rack network hop | ~0.2ms |
+| Same data center (cross-rack) | Intra-DC hop | ~0.5–5ms |
+| Same region (cross-AZ) | AWS us-east-1a → us-east-1b | ~1–3ms |
+| Cross-region (US → Europe) | Trans-Atlantic | ~80–120ms |
+| Cross-region (US → Asia) | Trans-Pacific | ~150–200ms |
+
+**Design rule:** Cross-region synchronous calls add 150ms+ to every request. Avoid them in the critical path. Use asynchronous replication for cross-region consistency.
+
+---
+
+## Interview Talking Points
+
+- "I'd use WebSockets for real-time chat. HTTP/2 for the REST API (multiplexing reduces connection overhead). gRPC (HTTP/2 + protobuf) for internal microservice calls."
+- "Node.js is ideal for the WebSocket server because it handles thousands of concurrent open connections with minimal memory — it's purely IO-bound work."
+- "Go would work well here: goroutines are 500× cheaper than OS threads, and we need to fan out to 10,000 follower connections per event."
+- "I'd terminate TLS at the API Gateway. All internal service-to-service calls use plain HTTP within the private VPC."

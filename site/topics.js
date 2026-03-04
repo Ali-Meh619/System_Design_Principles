@@ -130,7 +130,7 @@ window.TOPICS = [
       "Dead Letter Queues (DLQ)",
     ],
     tags:  ["kafka", "sqs", "rabbitmq", "at-least-once", "exactly-once", "dlq", "outbox", "consumer group", "partition"],
-    path:  "../docs/data/queues-and-streaming.md"
+    path:  "../docs/data/message-queues.md"
   },
 
   {
@@ -217,7 +217,7 @@ window.TOPICS = [
       "Scaling WebSocket Servers (Redis Pub/Sub)",
     ],
     tags:  ["websocket", "sse", "long polling", "pubsub", "fanout", "presence", "chat", "redis pub/sub"],
-    path:  "../docs/systems/realtime-communication.md"
+    path:  "../docs/architecture/realtime-communication.md"
   },
 
   /* ── DISTRIBUTED SYSTEMS ─────────────────────────────────────── */
@@ -257,7 +257,7 @@ window.TOPICS = [
       "Inventory Contention (Booking / Ticketing)",
     ],
     tags:  ["cqrs", "event sourcing", "fan-out", "outbox", "materialized view", "social feed", "booking", "optimistic locking"],
-    path:  "../docs/architecture/core-design-patterns.md"
+    path:  "../docs/distributed/core-design-patterns.md"
   },
 
   {
@@ -292,7 +292,7 @@ window.TOPICS = [
       "Load Shedding — Survival Mode",
     ],
     tags:  ["circuit breaker", "retry", "backoff", "jitter", "bulkhead", "timeout", "load shedding", "hystrix", "resilience4j"],
-    path:  "../docs/reliability/resilience-patterns.md"
+    path:  "../docs/distributed/resilience-patterns.md"
   },
 
   {
@@ -308,7 +308,7 @@ window.TOPICS = [
       "Fencing Tokens — The Safety Net",
     ],
     tags:  ["distributed lock", "redlock", "lease", "fencing token", "mutual exclusion", "zookeeper", "redis"],
-    path:  "../docs/distributed/distributed-locking.md"
+    path:  "../docs/advanced/distributed-locking.md"
   },
 
   /* ── SEARCH & ANALYTICS ──────────────────────────────────────── */
@@ -326,7 +326,7 @@ window.TOPICS = [
       "Relevance Ranking (TF-IDF, BM25)",
     ],
     tags:  ["elasticsearch", "inverted index", "trie", "prefix", "ranking", "relevance", "typeahead", "autocomplete", "tf-idf"],
-    path:  "../docs/systems/search-and-typeahead.md"
+    path:  "../docs/search/search-and-typeahead.md"
   },
 
   {
@@ -344,7 +344,7 @@ window.TOPICS = [
       "Event Time vs Processing Time",
     ],
     tags:  ["flink", "kafka streams", "spark", "count-min sketch", "hyperloglog", "lambda", "kappa", "windowing", "trending"],
-    path:  "../docs/data/stream-processing.md"
+    path:  "../docs/search/stream-processing.md"
   },
 
   {
@@ -361,7 +361,7 @@ window.TOPICS = [
       "Uber-Style Real-Time Driver Matching",
     ],
     tags:  ["geohash", "quadtree", "r-tree", "proximity", "nearby", "geofencing", "location", "uber", "spatial index"],
-    path:  "../docs/systems/geo-systems.md"
+    path:  "../docs/search/geo-systems.md"
   },
 
   /* ── SCALE & RELIABILITY ─────────────────────────────────────── */
@@ -380,7 +380,7 @@ window.TOPICS = [
       "Distributed Tracing (OpenTelemetry)",
     ],
     tags:  ["metrics", "logging", "tracing", "slo", "sla", "alerting", "prometheus", "grafana", "opentelemetry", "jaeger"],
-    path:  "../docs/reliability/observability.md"
+    path:  "../docs/scale/observability.md"
   },
 
   {
@@ -396,7 +396,7 @@ window.TOPICS = [
       "Multi-Region Architecture — Going Global",
     ],
     tags:  ["ha", "failover", "autoscaling", "active-active", "active-passive", "rto", "rpo", "multi-region", "global"],
-    path:  "../docs/reliability/high-availability-and-scaling.md"
+    path:  "../docs/scale/high-availability-scaling.md"
   },
 
   {
@@ -413,7 +413,7 @@ window.TOPICS = [
       "Ticket Server (Database Sequences)",
     ],
     tags:  ["snowflake", "uuid", "ulid", "id generation", "distributed id", "twitter snowflake", "monotonic"],
-    path:  "../docs/data/id-generation.md"
+    path:  "../docs/scale/id-generation.md"
   },
 
   {
@@ -430,7 +430,7 @@ window.TOPICS = [
       "Keyset Pagination (The Right Answer)",
     ],
     tags:  ["pagination", "cursor", "keyset", "offset", "infinite scroll", "page depth", "performance"],
-    path:  "../docs/data/pagination.md"
+    path:  "../docs/scale/pagination.md"
   },
 
   /* ── SECURITY ────────────────────────────────────────────────── */
@@ -484,7 +484,7 @@ window.TOPICS = [
       "Backfill & Reprocessing",
     ],
     tags:  ["cqrs", "materialized view", "etl", "elt", "hot partition", "backfill", "reprocessing", "write salting"],
-    path:  "../docs/data/advanced-data-patterns.md"
+    path:  "../docs/scale/advanced-data-patterns.md"
   },
 
   {
@@ -501,7 +501,7 @@ window.TOPICS = [
       "Model Serving Infrastructure (online, batch, fallback)",
     ],
     tags:  ["machine learning", "feature store", "model serving", "training", "mlops", "drift", "recommendation", "embeddings"],
-    path:  "../docs/ai/ml-in-system-design.md"
+    path:  "../docs/advanced/ml-in-system-design.md"
   },
 
   {
@@ -519,7 +519,7 @@ window.TOPICS = [
       "Evaluation (LLM-as-a-Judge)",
     ],
     tags:  ["llm", "agent", "rag", "tool use", "memory", "guardrails", "orchestrator", "multi-agent", "react", "chain-of-thought"],
-    path:  "../docs/ai/ai-agent-system-design.md"
+    path:  "../docs/advanced/ai-agent-system-design.md"
   },
 
   {
@@ -535,7 +535,7 @@ window.TOPICS = [
       "Count-Min Sketch — Frequency Counting",
     ],
     tags:  ["bloom filter", "hyperloglog", "count-min sketch", "approximate", "probabilistic", "cardinality", "false positive"],
-    path:  "../docs/ai/probabilistic-data-structures.md"
+    path:  "../docs/advanced/probabilistic-data-structures.md"
   },
 
   /* ── SPECIALIZED SYSTEMS ─────────────────────────────────────── */
@@ -554,7 +554,7 @@ window.TOPICS = [
       "Google Docs System Architecture",
     ],
     tags:  ["ot", "crdt", "operational transform", "conflict", "offline", "sync", "google docs", "presence", "version vector"],
-    path:  "../docs/systems/collaboration-editing.md"
+    path:  "../docs/advanced/collaboration-editing.md"
   },
 
   {
@@ -569,7 +569,7 @@ window.TOPICS = [
       "Webhook Architecture (queue-backed, signed, retried)",
     ],
     tags:  ["webhook", "signed payload", "hmac", "retry", "idempotent", "delivery", "event", "at-least-once"],
-    path:  "../docs/systems/webhooks.md"
+    path:  "../docs/advanced/webhooks.md"
   },
 
   {
@@ -585,7 +585,7 @@ window.TOPICS = [
       "Battery Optimization",
     ],
     tags:  ["mobile", "offline", "sync", "push notification", "battery", "delta sync", "apns", "fcm", "bandwidth"],
-    path:  "../docs/systems/mobile-system-design.md"
+    path:  "../docs/advanced/mobile-system-design.md"
   },
 
   /* ── REFERENCE ───────────────────────────────────────────────── */
@@ -609,7 +609,7 @@ window.TOPICS = [
       "Collaborative Real-time Editing",
     ],
     tags:  ["cheat sheet", "patterns", "quick reference", "read-heavy", "write-heavy", "global", "fan-out", "top-k"],
-    path:  "../docs/templates/scenario-cheat-sheet.md"
+    path:  "../docs/reference/scenario-cheat-sheet.md"
   },
 
   {
@@ -634,7 +634,7 @@ window.TOPICS = [
       "Code Submission & Execution (LeetCode)",
     ],
     tags:  ["template", "blueprint", "youtube", "twitter", "whatsapp", "uber", "url shortener", "rate limiter", "ticketmaster"],
-    path:  "../docs/templates/reusable-design-templates.md"
+    path:  "../docs/reference/reusable-design-templates.md"
   }
 
 ];

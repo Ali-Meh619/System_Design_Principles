@@ -1,118 +1,126 @@
 # API Design & API Gateway
 
-Every client-facing service exposes an API. The protocol, gateway strategy, and rate-limiting approach you choose become load-bearing decisions at scale.
+> The API is the contract between your services. Good API design prevents breaking changes. The API Gateway is the front door to your entire system.
 
 ---
 
 ## REST vs gRPC vs GraphQL
 
-| | REST | gRPC | GraphQL |
-|--|------|------|---------|
-| **Protocol** | HTTP/1.1 + JSON | HTTP/2 + Protobuf (binary) | HTTP/1.1 or HTTP/2 + JSON |
-| **Schema** | OpenAPI (optional) | Strongly typed `.proto` files | Strongly typed schema |
-| **Performance** | Moderate | High — binary, multiplexed | Moderate |
-| **Streaming** | Limited (SSE workaround) | First-class (server, client, bidirectional) | Subscriptions |
-| **Browser support** | Native | Needs grpc-web proxy | Native |
-| **Best for** | Public APIs, external clients | Internal microservices, high-throughput | Mobile clients, complex data graphs |
-| **Used by** | Twitter, GitHub, Stripe | Google internal APIs, Kubernetes, etcd | GitHub v4, Shopify, Facebook |
+**API Protocol Comparison**
 
-### REST
-The default. Every language, framework, and tool understands HTTP + JSON. Design principles:
-- Use nouns for resources: `GET /users/123` not `GET /getUser?id=123`
-- HTTP verbs carry semantics: GET (idempotent read), POST (create), PUT (replace), PATCH (partial update), DELETE
-- Return appropriate status codes: 200 OK, 201 Created, 400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found, 429 Too Many Requests, 500 Internal Server Error
-- Version your API: `/v1/users`, `/v2/users`
-
-### gRPC
-Google's Remote Procedure Call framework. Ideal for internal microservice communication where performance matters.
-
-**Key advantages:**
-- **Protobuf encoding** is 3–10× more compact than JSON and faster to serialize.
-- **HTTP/2 multiplexing** means many concurrent RPC calls over one connection.
-- **Strong typing** from `.proto` files. Generated client/server code in any language.
-- **Streaming:** Unary, server-streaming, client-streaming, bidirectional-streaming — all supported.
-
-**When NOT to use gRPC:** Public APIs where clients are browsers or unknown third parties — they can't easily use gRPC without a proxy (grpc-web or Envoy).
-
-### GraphQL
-Client specifies exactly the fields it needs. One query can fetch data from multiple "types" that would require multiple REST endpoints.
-
-**Key advantages:**
-- **No over-fetching:** Mobile client fetching a feed card asks only for `title, thumbnail, author.name` — not the full article object.
-- **No under-fetching:** Avoid N+1 request patterns by fetching nested data in one query.
-- **Evolving APIs:** Add fields without breaking old clients; deprecate fields without removing them immediately.
-
-**When NOT to use GraphQL:** Simple CRUD APIs. Caching is harder (every query is a POST). N+1 database queries if resolvers aren't implemented carefully (use DataLoader).
+| Protocol | How it works | Pros | Cons | Best for |
+|----------|-------------|------|------|----------|
+| **REST** | HTTP + JSON. Resources as URLs (GET /users/123). Stateless. | Universal, human-readable, browser-native, easy to debug | Over-fetching (response has more data than needed), under-fetching (need multiple calls) | Public APIs, client-facing services, simple CRUD operations |
+| **gRPC** | HTTP/2 + Protocol Buffers (binary). Define API in .proto files. | 3–10× faster than REST (binary encoding). Streaming support. Strong typing catches errors at compile time. | Not human-readable. Browser support limited. Requires proto files. | Internal microservice-to-microservice calls. High-throughput pipelines. |
+| **GraphQL** | Client specifies exactly what fields it wants in the query. Single endpoint. | No over/under-fetching. Client drives the shape. Excellent for complex nested data. | Complex caching (queries aren't URL-based). Complexity shifted to client. N+1 query problem. | Mobile apps where bandwidth matters. Complex UIs fetching many related resources. |
 
 ---
 
 ## The API Gateway
 
-An **API Gateway** sits in front of all your backend services and acts as the single entry point for all client traffic. It is not optional at scale.
+An **API Gateway** is the single entry point for all external requests to your system. Instead of clients connecting directly to 50 different microservices, they connect to one gateway that routes, authenticates, rate-limits, and monitors every request. This pattern is called **Backend for Frontend (BFF)** when the gateway is tailored to a specific client type (mobile vs. web vs. third-party).
 
-```
-Clients → [API Gateway] → Service A
-                        → Service B
-                        → Service C
-```
+**What an API Gateway Does**
 
-**What the API Gateway handles:**
+| Function | How it works |
+|----------|-------------|
+| **Routing** | Routes /users/* to the User Service, /orders/* to the Order Service, etc. |
+| **Authentication** | Validates JWT tokens, API keys before the request reaches any service |
+| **Rate limiting** | Enforces per-user/per-tenant request limits at the edge |
+| **SSL termination** | Handles HTTPS encryption/decryption — backend services get plain HTTP |
+| **Request transformation** | Translates between API versions, adds headers, transforms request format |
+| **Circuit breaking** | If a downstream service is failing, stops forwarding requests to it |
+| **Observability** | Central place to log, trace, and monitor all API traffic |
 
-| Responsibility | Without Gateway | With Gateway |
-|---------------|-----------------|--------------|
-| Authentication | Each service validates tokens | Gateway validates once, forwards identity |
-| Rate limiting | Each service implements its own | Centralized, consistent across all services |
-| SSL termination | Each service handles TLS | Gateway terminates TLS, internal traffic can be plain HTTP |
-| Request routing | Each client knows service addresses | Clients know only the gateway address |
-| Request transformation | Each service handles format differences | Gateway translates (REST → gRPC, v1 → v2) |
-| Observability | Scattered across services | Centralized access logs, latency metrics |
-| Caching | Each service adds its own layer | Gateway can cache responses for GET requests |
-
-**Popular API Gateways:** AWS API Gateway, Kong, Nginx (as gateway), Envoy, Istio (service mesh — more powerful but complex), Traefik.
+| Service | Best For | Key Features |
+|---------|----------|--------------|
+| **AWS API Gateway** | Serverless APIs on AWS | Managed. Native Lambda integration. Handles millions of requests. Pay per call. |
+| **Kong** | Open-source, self-hosted | Plugin-based. Highly extensible. Used at massive scale. Can run on Kubernetes. |
+| **NGINX / Traefik** | Lightweight reverse proxy | Often used as API gateway for simpler setups. Extremely fast. Used by Netflix, Cloudflare. |
 
 ---
 
 ## Rate Limiting in Depth
 
-Rate limiting protects your services from being overwhelmed by too many requests, whether from traffic spikes, misbehaving clients, or attacks.
+**Rate limiting** protects your API from being overwhelmed — whether by malicious actors (DDoS) or legitimate users making too many calls. It also enables fair usage across tenants.
 
-### Rate Limiting Algorithms
+**Rate Limiting Algorithms**
 
-**Token Bucket** (most common)
-- A bucket holds up to `capacity` tokens.
-- Tokens are added at `rate` per second.
-- Each request consumes one token.
-- If bucket is empty, request is rejected (429 Too Many Requests).
-- **Allows bursting** up to `capacity` requests momentarily, then sustains at `rate`.
+| Algorithm | How it works | Pros | Cons |
+|-----------|-------------|------|------|
+| **Fixed Window Counter** | Count requests in 1-minute buckets. Reset counter each minute. | Simple. Low memory. | Boundary burst problem: can send 2× limit at the window boundary. |
+| **Sliding Window Log** | Store timestamps of all requests. Count those in last 60 seconds. | Accurate. No boundary burst. | High memory — must store all timestamps. |
+| **Token Bucket** | Bucket holds N tokens. Refilled at R tokens/second. Each request consumes one token. Full bucket allows bursting. | Allows natural bursting. Simple. Most commonly used in APIs. | Slightly complex implementation. |
+| **Leaky Bucket** | Requests enter at any rate but are processed at a fixed constant rate (like water dripping from a leaky bucket). | Smooth output rate. Good for protecting downstream services. | Bursty input gets queued; latency increases under bursts. |
 
-**Leaky Bucket**
-- Requests enter a queue. Queue drains at a fixed rate.
-- Provides a smooth, constant output rate. No bursting.
-- Used when downstream can't handle bursts (payment processors).
-
-**Fixed Window Counter**
-- Count requests in fixed time windows (e.g., per minute).
-- Simple but has edge case: a client can send 2× limit across a window boundary.
-
-**Sliding Window Log / Counter**
-- More precise. Tracks exact request timestamps.
-- Eliminates the window-boundary spike problem.
-- Slightly more memory usage.
-
-### Where to Store Rate Limit State
-- **Redis** is the standard. Atomic `INCR` + `EXPIRE` for simple counters. Lua scripts for token bucket logic. Single Redis instance handles millions of rate limit checks per second.
-- For distributed rate limiting (multiple gateway nodes): use Redis Cluster or a consistent hash to route all requests for the same key to the same Redis shard.
-
-### Rate Limit Headers (return in 429 response)
-```
-X-RateLimit-Limit: 1000
-X-RateLimit-Remaining: 0
-X-RateLimit-Reset: 1704067200
-Retry-After: 60
-```
+In production, rate limiting is implemented with **Redis**: an atomic Lua script increments a counter keyed by user_id + time_window, checks against the limit, and returns allow/deny in a single atomic operation. This prevents race conditions when multiple API servers check the same counter simultaneously.
 
 ---
 
-## Interview Answer Sketch
+## REST API Design Best Practices
 
-> "I'd put an API Gateway in front of all services. It handles TLS termination, JWT validation, rate limiting (token bucket in Redis, 1000 req/min per user), and routes requests to the right backend service. Internally, services communicate via gRPC over HTTP/2 for lower latency and smaller payloads. The public API is REST for external developers since every language can consume JSON over HTTP."
+**Resource naming:**
+- Use nouns, not verbs: `/users`, `/orders`, not `/getUser`, `/createOrder`
+- Plural resource names: `/users/123`, not `/user/123`
+- Hierarchical for relationships: `/users/123/orders/456`
+
+**HTTP Methods:**
+| Method | Use | Idempotent? | Safe? |
+|--------|-----|-------------|-------|
+| `GET` | Retrieve resource | Yes | Yes |
+| `POST` | Create resource | No | No |
+| `PUT` | Replace entire resource | Yes | No |
+| `PATCH` | Partially update resource | No | No |
+| `DELETE` | Delete resource | Yes | No |
+
+**HTTP Status Codes:**
+| Code | Meaning | Use when |
+|------|---------|---------|
+| `200 OK` | Success | Successful GET, PUT, PATCH |
+| `201 Created` | Resource created | Successful POST |
+| `204 No Content` | Success, no body | Successful DELETE |
+| `400 Bad Request` | Client error | Invalid input, missing fields |
+| `401 Unauthorized` | Authentication required | Missing/invalid token |
+| `403 Forbidden` | Access denied | Token valid but insufficient permissions |
+| `404 Not Found` | Resource doesn't exist | Getting unknown ID |
+| `409 Conflict` | Resource conflict | Duplicate email, optimistic lock failure |
+| `429 Too Many Requests` | Rate limit exceeded | Rate limiting |
+| `500 Internal Server Error` | Server crashed | Unhandled exception |
+| `503 Service Unavailable` | Service overloaded | Load shedding, maintenance |
+
+---
+
+## API Versioning Strategies
+
+When you need to make breaking changes, you need a versioning strategy:
+
+| Strategy | Example | Pros | Cons |
+|----------|---------|------|------|
+| **URL path versioning** | `/v1/users`, `/v2/users` | Clear, easy to test in browser, easy caching | URL pollution, must update all clients |
+| **Header versioning** | `Accept: application/vnd.api+json; version=2` | Clean URLs | Harder to test, less discoverable |
+| **Query parameter** | `/users?version=2` | Simple | Breaks caching, messy URLs |
+| **Content negotiation** | `Accept: application/vnd.myapi.v2+json` | RESTful standard | Complex to implement |
+
+> 💡 **Best practice:** URL path versioning (`/v1/`, `/v2/`) is the most pragmatic choice for most systems. Run v1 and v2 simultaneously until all clients migrate, then deprecate v1.
+
+---
+
+## API Design for Backward Compatibility
+
+Rules to avoid breaking existing clients:
+
+1. **Never remove fields** from responses — add new ones instead
+2. **Never rename fields** — clients depend on exact field names
+3. **Never change field types** — string → int breaks parsers
+4. **Never make optional fields required** — existing clients don't send them
+5. **Adding new endpoints is always safe**
+6. **Use semantic versioning** for major breaking changes (`/v2/`)
+
+---
+
+## Interview Talking Points
+
+- "I'd use REST for the client-facing API (browser-native, cacheable) and gRPC for internal service-to-service calls (3-10× faster, strongly typed)."
+- "The API Gateway handles authentication, rate limiting, and routing — all services behind it only see authenticated requests. This avoids duplicating auth logic in every service."
+- "Rate limiting: Token Bucket in Redis. Atomic Lua script to check-and-decrement. Return `X-RateLimit-Remaining` headers so clients can self-throttle."
+- "For mobile: GraphQL prevents over-fetching. A mobile client on a 3G connection can request just the fields it needs instead of downloading a full response."

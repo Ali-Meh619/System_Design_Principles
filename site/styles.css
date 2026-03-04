@@ -656,6 +656,7 @@ body {
   flex-direction: column;
   position: relative;
   overflow: hidden;
+  cursor: pointer;
   transition:
     transform var(--t-base),
     box-shadow var(--t-base),
@@ -844,6 +845,11 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
   transition: gap var(--t-base), color var(--t-base);
 }
 [data-theme="dark"] .card-link { color: var(--primary); }
@@ -961,6 +967,12 @@ mark {
   border-radius: var(--r-sm);
   text-decoration: none;
   color: var(--text);
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
   transition: background var(--t-base);
 }
 .bookmark-item:hover { background: var(--bg-elevated); }
@@ -1377,5 +1389,377 @@ kbd {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* ════════════════════════════════
+   READER PANEL
+   ════════════════════════════════ */
+.reader-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  z-index: 900;
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-end;
+  animation: fadeIn 0.2s var(--ease);
+}
+
+.reader-panel {
+  width: min(780px, 100vw);
+  height: 100dvh;
+  background: var(--bg-panel);
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-xl);
+  animation: slideInRight 0.3s var(--ease);
+  overflow: hidden;
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0);   opacity: 1; }
+}
+
+.reader-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-panel);
+  flex-shrink: 0;
+}
+
+.reader-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.reader-topic-icon {
+  font-size: 1.6rem;
+  flex-shrink: 0;
+}
+
+.reader-category {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--primary);
+  margin-bottom: 0.15rem;
+}
+
+.reader-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 380px;
+}
+
+.reader-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.reader-action-btn {
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reader-action-btn.is-active {
+  color: var(--primary);
+  background: var(--primary-light);
+}
+
+.reader-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0;
+  scroll-behavior: smooth;
+}
+
+.reader-content {
+  padding: 2rem 2.25rem 3rem;
+  max-width: 100%;
+}
+
+/* ── Markdown Typography ── */
+.reader-content h1 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--text);
+  margin: 0 0 0.5rem;
+  line-height: 1.2;
+}
+
+.reader-content h2 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 2.5rem 0 0.75rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 2px solid var(--primary-light);
+}
+
+.reader-content h3 {
+  font-size: 1.08rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 1.75rem 0 0.5rem;
+}
+
+.reader-content h4 {
+  font-size: 0.97rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin: 1.25rem 0 0.4rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.reader-content p {
+  color: var(--text);
+  line-height: 1.75;
+  margin: 0 0 1rem;
+  font-size: 0.97rem;
+}
+
+.reader-content ul,
+.reader-content ol {
+  padding-left: 1.5rem;
+  margin: 0 0 1rem;
+  color: var(--text);
+}
+
+.reader-content li {
+  line-height: 1.7;
+  margin-bottom: 0.3rem;
+  font-size: 0.97rem;
+}
+
+.reader-content li + li {
+  margin-top: 0.2rem;
+}
+
+.reader-content strong {
+  font-weight: 700;
+  color: var(--text);
+}
+
+.reader-content em {
+  font-style: italic;
+}
+
+.reader-content code {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+  font-size: 0.84em;
+  background: var(--bg-elevated);
+  color: var(--primary-dark);
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+
+.reader-content pre {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 1.25rem 1.5rem;
+  overflow-x: auto;
+  margin: 1.25rem 0;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.reader-content pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--text);
+  font-size: inherit;
+}
+
+/* Tables */
+.reader-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+
+.reader-content th {
+  background: var(--bg-elevated);
+  font-weight: 700;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  padding: 0.65rem 1rem;
+  text-align: left;
+  border-bottom: 2px solid var(--border);
+}
+
+.reader-content td {
+  padding: 0.65rem 1rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  vertical-align: top;
+  line-height: 1.5;
+}
+
+.reader-content tr:last-child td {
+  border-bottom: none;
+}
+
+.reader-content tr:nth-child(even) td {
+  background: var(--bg-elevated);
+}
+
+/* Blockquotes (tip/warning boxes) */
+.reader-content blockquote {
+  margin: 1.25rem 0;
+  padding: 0.85rem 1.25rem;
+  border-left: 4px solid var(--primary);
+  background: var(--primary-light);
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+  color: var(--text);
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+
+.reader-content blockquote p {
+  margin: 0;
+  color: inherit;
+}
+
+.reader-content blockquote p + p {
+  margin-top: 0.4rem;
+}
+
+/* Warning blockquotes (those starting with ⚠️) */
+.reader-content blockquote:has(p:first-child > strong:first-child) {
+  border-left-color: #f59e0b;
+  background: #fef3c7;
+}
+
+[data-theme="dark"] .reader-content blockquote:has(p:first-child > strong:first-child) {
+  border-left-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.15);
+}
+
+/* Horizontal rules */
+.reader-content hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
+}
+
+/* Reader loading state */
+.reader-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  gap: 1rem;
+  color: var(--text-muted);
+}
+
+.reader-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.reader-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.875rem 1.25rem;
+  border-top: 1px solid var(--border);
+  background: var(--bg-panel);
+  flex-shrink: 0;
+}
+
+/* ── Dark mode overrides for reader ── */
+[data-theme="dark"] .reader-overlay {
+  background: rgba(0, 0, 0, 0.72);
+}
+
+[data-theme="dark"] .reader-content code {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--border);
+  color: #86efac;
+}
+
+[data-theme="dark"] .reader-content pre {
+  background: #0d1117;
+  border-color: var(--border);
+}
+
+[data-theme="dark"] .reader-content pre code {
+  color: #e2e8f0;
+}
+
+[data-theme="dark"] .reader-content th {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .reader-content tr:nth-child(even) td {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+[data-theme="dark"] .reader-content blockquote {
+  background: rgba(13, 148, 136, 0.12);
+}
+
+/* ── Responsive reader ── */
+@media (max-width: 640px) {
+  .reader-panel {
+    width: 100vw;
+    border-radius: 0;
+  }
+  .reader-content {
+    padding: 1.25rem 1rem 2rem;
+  }
+  .reader-title {
+    max-width: 200px;
+    font-size: 0.95rem;
+  }
+  .reader-content table {
+    font-size: 0.8rem;
+  }
+  .reader-content th,
+  .reader-content td {
+    padding: 0.5rem 0.65rem;
+  }
+  .reader-footer {
+    gap: 0.4rem;
   }
 }

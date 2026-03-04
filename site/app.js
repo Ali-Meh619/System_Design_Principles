@@ -333,9 +333,9 @@
           ${subtopicsHtml}
         </div>
         <div class="card-footer">
-          <a class="card-link" href="${esc(topic.path)}" target="_blank" rel="noopener noreferrer">
-            Open topic →
-          </a>
+          <button class="card-link" data-action="open">
+            Read topic →
+          </button>
           ${topic.difficulty
             ? `<span class="card-difficulty diff-${esc(topic.difficulty)}">${esc(
                 topic.difficulty.charAt(0).toUpperCase() + topic.difficulty.slice(1)
@@ -354,6 +354,15 @@
         e.preventDefault();
         e.stopPropagation();
         toggleRead(topic.title);
+      });
+      card.querySelector('[data-action="open"]').addEventListener('click', e => {
+        e.preventDefault();
+        openReader(topic);
+      });
+      /* Also open reader on card body click (but not action buttons) */
+      card.addEventListener('click', e => {
+        if (e.target.closest('[data-action]')) return;
+        openReader(topic);
       });
 
       el.topicGrid.appendChild(card);
@@ -413,11 +422,9 @@
 
     saved.forEach(topic => {
       const cc   = catClass(topic.category);
-      const item = document.createElement('a');
+      const item = document.createElement('button');
+      item.type      = 'button';
       item.className = `bookmark-item ${cc}`;
-      item.href      = topic.path;
-      item.target    = '_blank';
-      item.rel       = 'noopener noreferrer';
       item.innerHTML = `
         <div class="bookmark-dot"></div>
         <div>
@@ -425,6 +432,10 @@
           <div class="bookmark-title">${esc(topic.title)}</div>
         </div>
       `;
+      item.addEventListener('click', () => {
+        closeSidebar();
+        setTimeout(() => openReader(topic), 350);
+      });
       el.bookmarkList.appendChild(item);
     });
   }
@@ -481,7 +492,12 @@
     el.quizCategory.textContent = topic.category;
     el.quizQuestion.textContent = topic.title;
     el.quizAnswer.textContent   = topic.summary;
-    el.quizOpenLink.href        = topic.path;
+    el.quizOpenLink.href        = '#';
+    el.quizOpenLink.onclick     = e => {
+      e.preventDefault();
+      closeQuiz();
+      setTimeout(() => openReader(topic), 200);
+    };
 
     el.quizAnswerBlock.hidden = !quizRevealed;
     el.quizHint.hidden        = quizRevealed;
@@ -516,6 +532,160 @@
     quizRevealed = false;
     renderQuizCard();
   }
+
+  /* ══════════════════════════════════
+     Inline Markdown Reader
+     ══════════════════════════════════ */
+  const elR = {
+    overlay:    $('readerOverlay'),
+    panel:      $('readerPanel'),
+    body:       $('readerPanel') && $('readerPanel').querySelector('.reader-body'),
+    icon:       $('readerTopicIcon'),
+    category:   $('readerCategory'),
+    title:      $('readerTitle'),
+    content:    $('readerContent'),
+    loading:    $('readerLoading'),
+    bookmark:   $('readerBookmark'),
+    read:       $('readerRead'),
+    github:     $('readerGithub'),
+    markRead:   $('readerMarkRead'),
+    prev:       $('readerPrev'),
+    next:       $('readerNext'),
+    close:      $('closeReader'),
+  };
+
+  let readerTopic    = null;
+  let readerFiltered = [];
+
+  const mdCache = {};
+
+  function openReader(topic) {
+    readerTopic    = topic;
+    readerFiltered = topics.filter(matches);
+
+    /* Header */
+    elR.icon.textContent     = topic.icon || '📄';
+    elR.category.textContent = topic.category;
+    elR.title.textContent    = topic.title;
+
+    /* GitHub raw link */
+    const rawPath = topic.path.replace(/^\.\.\//, '');
+    elR.github.href = `https://github.com/Ali-Meh619/System_Design_Principles/blob/main/${rawPath}`;
+
+    /* Update action buttons */
+    syncReaderButtons(topic.title);
+
+    /* Show overlay */
+    elR.overlay.hidden = false;
+    document.body.style.overflow = 'hidden';
+    elR.close.focus();
+
+    /* Load markdown */
+    loadMarkdown(topic);
+  }
+
+  function syncReaderButtons(title) {
+    if (!readerTopic) return;
+    const isBookmarked = bookmarks.includes(title);
+    const isRead       = read.includes(title);
+    elR.bookmark.textContent  = isBookmarked ? '🔖' : '🔖';
+    elR.bookmark.title        = isBookmarked ? 'Remove bookmark' : 'Bookmark';
+    elR.bookmark.classList.toggle('is-active', isBookmarked);
+    elR.read.textContent      = isRead ? '✅' : '○';
+    elR.read.title            = isRead ? 'Mark as unread' : 'Mark as read';
+    elR.read.classList.toggle('is-active', isRead);
+    elR.markRead.textContent  = isRead ? 'Mark as Unread' : 'Mark as Read';
+  }
+
+  function loadMarkdown(topic) {
+    elR.content.innerHTML = '';
+    elR.content.appendChild(elR.loading);
+    elR.loading.hidden = false;
+    if (elR.body) elR.body.scrollTop = 0;
+
+    if (mdCache[topic.path]) {
+      renderMarkdown(mdCache[topic.path]);
+      return;
+    }
+
+    fetch(topic.path)
+      .then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.text();
+      })
+      .then(md => {
+        mdCache[topic.path] = md;
+        renderMarkdown(md);
+      })
+      .catch(err => {
+        elR.content.innerHTML = `
+          <div style="padding:2rem;text-align:center;color:var(--text-muted);">
+            <p style="font-size:2rem">😔</p>
+            <p>Could not load content.</p>
+            <p style="font-size:0.85rem;margin-top:0.5rem;">${err.message}</p>
+            <a href="${esc(topic.path)}" target="_blank" rel="noopener noreferrer"
+               style="color:var(--primary);text-decoration:underline;margin-top:1rem;display:inline-block;">
+              Open file directly →
+            </a>
+          </div>`;
+      });
+  }
+
+  function renderMarkdown(md) {
+    if (typeof marked === 'undefined') {
+      elR.content.innerHTML = `<pre style="white-space:pre-wrap;padding:1rem;line-height:1.6;">${esc(md)}</pre>`;
+      return;
+    }
+    /* Configure marked */
+    marked.setOptions({ gfm: true, breaks: false });
+    const html = marked.parse(md);
+    /* Preserve loading element, replace rest */
+    elR.content.innerHTML = '';
+    elR.content.appendChild(elR.loading);
+    elR.loading.hidden = true;
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = html;
+    elR.content.appendChild(wrapper);
+  }
+
+  function closeReader() {
+    elR.overlay.hidden = true;
+    document.body.style.overflow = '';
+    readerTopic = null;
+  }
+
+  function readerNavigate(dir) {
+    if (!readerTopic) return;
+    const idx  = readerFiltered.findIndex(t => t.title === readerTopic.title);
+    const next = readerFiltered[idx + dir];
+    if (next) openReader(next);
+  }
+
+  /* Reader event listeners */
+  elR.close.addEventListener('click', closeReader);
+  elR.overlay.addEventListener('click', e => {
+    if (e.target === elR.overlay) closeReader();
+  });
+  elR.prev.addEventListener('click', () => readerNavigate(-1));
+  elR.next.addEventListener('click', () => readerNavigate(1));
+
+  elR.bookmark.addEventListener('click', () => {
+    if (!readerTopic) return;
+    toggleBookmark(readerTopic.title);
+    syncReaderButtons(readerTopic.title);
+  });
+
+  elR.read.addEventListener('click', () => {
+    if (!readerTopic) return;
+    toggleRead(readerTopic.title);
+    syncReaderButtons(readerTopic.title);
+  });
+
+  elR.markRead.addEventListener('click', () => {
+    if (!readerTopic) return;
+    toggleRead(readerTopic.title);
+    syncReaderButtons(readerTopic.title);
+  });
 
   /* ══════════════════════════════════
      Learning path buttons
@@ -626,6 +796,14 @@
   document.addEventListener('keydown', e => {
     const tag     = document.activeElement.tagName;
     const inInput = tag === 'INPUT' || tag === 'TEXTAREA';
+
+    /* Reader mode captures Escape */
+    if (elR.overlay && !elR.overlay.hidden) {
+      if (e.key === 'Escape') { e.preventDefault(); closeReader(); return; }
+      if (e.key === 'ArrowRight') { e.preventDefault(); readerNavigate(1); return; }
+      if (e.key === 'ArrowLeft')  { e.preventDefault(); readerNavigate(-1); return; }
+      return;
+    }
 
     /* Quiz mode captures all keys */
     if (!el.quizOverlay.hidden) {

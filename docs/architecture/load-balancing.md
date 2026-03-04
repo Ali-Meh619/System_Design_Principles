@@ -1,103 +1,99 @@
 # Load Balancing & Networking
 
-Load balancers distribute traffic across multiple servers, provide health-check-based failover, and are the gateway through which all network traffic enters your system.
+> Load balancers distribute traffic across servers. Understanding routing algorithms and failure handling is essential for any high-availability design.
 
 ---
 
 ## L4 vs L7 Load Balancing
 
-The "layer" refers to the OSI model layer at which the load balancer makes routing decisions.
+Load balancers operate at different layers of the network stack. The layer determines what information they can see and act on.
 
-### Layer 4 (Transport Layer) Load Balancer
-Routes based on **IP address and TCP/UDP port** only. Does not inspect the packet contents (no HTTP headers, no URLs).
+**L4 vs L7 Comparison**
 
-- **Pros:** Extremely fast. Minimal CPU overhead. Works for any TCP/UDP protocol (HTTP, MySQL, Redis, SMTP).
-- **Cons:** Cannot make application-aware routing decisions (route `/api/videos` to video servers). No SSL termination.
-- **When to use:** High-throughput, latency-sensitive workloads. Gaming servers. Database connection pooling.
-- **Examples:** AWS NLB (Network Load Balancer), HAProxy in TCP mode.
+| Layer | What it sees | Routing decisions based on | Examples |
+|-------|-------------|---------------------------|---------|
+| **L4 (Transport Layer)** | IP addresses, ports, TCP/UDP protocol | IP address and port only. Fast. Cannot see request content. | AWS NLB, HAProxy in TCP mode |
+| **L7 (Application Layer)** | HTTP headers, URL paths, cookies, body | URL path, hostname, user session. Slower but far more powerful. | AWS ALB, Nginx, Kong |
 
-### Layer 7 (Application Layer) Load Balancer
-Routes based on **HTTP content**: URL path, headers, cookies, request body.
-
-- **Pros:** Application-aware routing (URL-based, cookie-based sticky sessions). SSL termination. HTTP/2 support. Request/response inspection, transformation.
-- **Cons:** Higher CPU overhead (must parse HTTP). Slightly more latency.
-- **When to use:** HTTP/HTTPS services. Microservices needing path-based routing. WebSocket support.
-- **Examples:** AWS ALB (Application Load Balancer), Nginx, HAProxy in HTTP mode, Envoy.
-
-| | L4 | L7 |
-|--|----|----|
-| Decision basis | IP + Port | URL, headers, cookies |
-| SSL termination | No | Yes |
-| Content-based routing | No | Yes |
-| Performance | Very high | High |
-| Use case | Any TCP/UDP | HTTP/HTTPS services |
+Most web systems use L7 load balancing because it enables content-based routing: `/api/*` goes to API servers, `/static/*` goes to CDN origin servers, `/admin/*` goes to admin servers. L4 is used in front of L7 when you need maximum throughput with minimal overhead.
 
 ---
 
 ## Load Balancing Algorithms
 
-### Round Robin
-Requests distributed sequentially: Server 1 → Server 2 → Server 3 → Server 1 → ...
+**Algorithm Comparison**
 
-- **Pros:** Simple. Equal distribution when all servers are equivalent.
-- **Cons:** Doesn't account for server load or request weight. If one request takes 10× longer, that server becomes a bottleneck.
-
-### Weighted Round Robin
-Like Round Robin but servers have weights. Server A (weight 3) gets 3 requests for every 1 request to Server B (weight 1).
-
-- **Use when:** Servers have different capacities. Gradually shifting traffic (canary deploys — send 5% to new version).
-
-### Least Connections
-Routes to the server with fewest active connections.
-
-- **Pros:** Automatically routes away from overloaded servers. Self-correcting.
-- **Cons:** Slightly more overhead (must track connection counts). Doesn't account for connection cost variation.
-- **Best for:** Long-lived connections (WebSocket, gRPC streaming) where connection count is a proxy for load.
-
-### Consistent Hashing
-Hash a key (user ID, session ID, client IP) to determine which server handles the request. Same key always goes to the same server.
-
-- **Pros:** Session affinity without server-side session sharing. Cache locality (same server handles same user, so its cache is warm).
-- **Cons:** Uneven distribution if keys aren't uniformly distributed. Adding/removing servers only remaps ~K/N keys (much better than simple modular hashing).
-- **Best for:** Stateful services (WebSocket chat servers), distributed caches, database sharding.
-- **How it works:** Servers and keys are placed on a ring. A key routes to the nearest server clockwise. Adding a server only steals keys from its clockwise neighbor.
-
-### IP Hash
-Hash the client IP to select a server. Same client always goes to same server (sticky).
-
-- **Pros:** No session store needed if app state is local.
-- **Cons:** Breaks if client IP changes (NAT, proxies). Uneven distribution if many clients share IPs.
+| Algorithm | How it works | Best for |
+|-----------|-------------|---------|
+| **Round Robin** | Send request 1 to server 1, request 2 to server 2, etc., cycling through. | Stateless services with identical hardware and request costs. |
+| **Weighted Round Robin** | Same but powerful servers get proportionally more traffic. | Heterogeneous server fleet (different CPU/memory). |
+| **Least Connections** | Send next request to server currently handling fewest active connections. | Long-lived connections (WebSockets, streaming) where request duration varies. |
+| **Consistent Hashing** | Hash request key (e.g., user_id) to always route same user to same server. | Stateful services, caches (same user hits same server = warm cache), chat servers. |
+| **Least Response Time** | Route to the server with lowest current latency AND fewest connections. | Heterogeneous workloads where response time varies significantly. |
 
 ---
 
 ## Health Checks & Failover
 
-Load balancers continuously probe backend servers. If a server fails health checks, traffic is automatically rerouted to healthy servers.
+A load balancer continuously checks if backend servers are healthy via **health check endpoints** — typically a `GET /health` that returns `200 OK`. If a server fails to respond (times out) or returns a non-200 status for N consecutive checks, the load balancer removes it from the rotation and stops sending traffic. When the server recovers, it's automatically added back. This is the foundation of high availability: servers can die without user impact.
 
-**Active health check:** Load balancer sends periodic HTTP GET to `/health` on each backend. Expects 200 OK within a timeout. If N consecutive checks fail, server is marked unhealthy. When M consecutive checks pass, it's restored.
+**Health check best practices:**
+- Check every 10 seconds; fail after 3 consecutive failures (~30 seconds to remove)
+- Health endpoint should test actual dependencies (DB connection, Redis connection), not just return 200
+- Use different health endpoints for load balancer (shallow) vs. orchestrator (deep)
 
-**Passive health check:** Load balancer monitors actual request results. If a backend returns 5xx errors or times out, it is temporarily removed from rotation.
+---
 
-**Typical settings:**
-```
-interval: 10s         # Check every 10 seconds
-timeout: 5s           # Request must respond within 5s
-unhealthy_threshold: 3  # 3 failures → mark unhealthy
-healthy_threshold: 2    # 2 successes → mark healthy again
-```
+## Load Balancer Types in Practice
 
-**Connection draining (graceful shutdown):** When a server is removed, existing connections are allowed to complete (within a grace period) before the server is truly taken offline. New connections stop going to it immediately. Prevents breaking in-flight requests during deployments.
+| Type | Product | Use Case |
+|------|---------|---------|
+| **Hardware LB** | F5, Citrix ADC | Enterprise, telco. Expensive but handle millions of connections at line rate |
+| **Cloud-managed L7** | AWS ALB, GCP HTTPS LB | Web applications, microservices. Auto-scaling. Path/header routing |
+| **Cloud-managed L4** | AWS NLB | Ultra-high throughput. Preserves source IP. Static IP addresses |
+| **Software LB (self-hosted)** | Nginx, HAProxy | Full control. Used inside VPC for internal traffic |
+| **Service Mesh** | Istio, Envoy, Linkerd | Kubernetes. Per-pod load balancing, circuit breaking, mTLS |
+| **DNS-based** | AWS Route 53, Cloudflare | Global routing, geo-based routing, health-check-based failover |
 
 ---
 
 ## Global Load Balancing (Multi-Region)
 
-For global traffic, use DNS-based load balancing to route users to the nearest region:
-- **Anycast routing:** Same IP address advertised from multiple data centers. BGP routing automatically sends clients to the nearest one (Cloudflare, AWS Global Accelerator).
-- **GeoDNS:** DNS returns different IP addresses based on the client's geographic location. Route Tokyo users to the Asia-Pacific region.
+For global deployments, you need a layer above regional load balancers:
+
+1. **GeoDNS** (Route 53 Geolocation routing): DNS returns different IPs based on user's geographic location. US users → us-east-1, European users → eu-west-1.
+2. **Anycast routing**: The same IP address is advertised from multiple data centers. Network routing sends users to the nearest one. Used by Cloudflare, Fastly.
+3. **Global HTTP LB** (GCP Global LB, AWS CloudFront): Anycast front-end routes to the nearest healthy backend. Works at L7.
 
 ---
 
-## Interview Answer Sketch
+## Sticky Sessions (Session Affinity)
 
-> "I'd place an L7 load balancer (AWS ALB) in front of the API servers. It handles SSL termination and routes `/api/videos/*` to video servers and `/api/users/*` to user servers. Round-robin distributes traffic. Health checks every 10 seconds with 3-failure threshold. WebSocket connections to the chat service use consistent hashing on user ID to pin a user's connection to the same server — so pub/sub messages don't need to cross server boundaries."
+Some applications require the same user to always reach the same backend server (stateful applications). Load balancers achieve this via sticky sessions:
+
+- **Cookie-based**: LB injects a cookie with the server ID. Subsequent requests with that cookie go to the same server.
+- **IP hash**: Hash the client's IP address to always route to the same server.
+- **Application-level**: Use consistent hashing on user_id.
+
+> ⚠️ **Warning:** Sticky sessions undermine the purpose of load balancing. If a user's "sticky" server is overloaded, that user has poor performance even though other servers are idle. Prefer stateless servers + externalized state (Redis sessions) over sticky sessions.
+
+---
+
+## Connection Draining (Graceful Shutdown)
+
+When removing a server from rotation (deployment, scale-in), you need **connection draining**:
+
+1. Load balancer stops sending **new** requests to the server (deregistered)
+2. Existing active requests are allowed to complete (drain timeout: 30–300 seconds)
+3. Server shuts down after all connections close or drain timeout expires
+
+This prevents cutting off in-flight requests during deployments.
+
+---
+
+## Interview Talking Points
+
+- "I'd use an L7 load balancer (AWS ALB) in front of the API servers. It routes `/api/v1/users/*` to the user service and `/api/v1/orders/*` to the order service. Health checks on `/health` every 10 seconds."
+- "For WebSocket connections, I'd use Least Connections algorithm — since WebSocket connections are long-lived, round robin would unevenly distribute load over time."
+- "Consistent hashing at the load balancer routes all requests from the same user to the same WebSocket server — their connection is always reachable without Redis pub/sub for intra-server routing."
+- "GeoDNS routes European users to our Frankfurt region and US users to Virginia — this cuts latency by 100ms+ versus serving everyone from one region."

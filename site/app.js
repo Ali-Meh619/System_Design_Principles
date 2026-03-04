@@ -37,6 +37,7 @@
       'Database Selection Guide',
       'Caching Deep Dive',
       'API Design & API Gateway',
+      'Rate Limiting In Depth',
     ],
     mid: [
       'Distributed System Fundamentals',
@@ -44,6 +45,8 @@
       'Observability & Monitoring',
       'High Availability & Auto Scaling',
       'Microservices vs Monolith',
+      'Notification System Design',
+      'Message Queues & Event Streaming',
     ],
     advanced: [
       'AI Agent System Design',
@@ -51,6 +54,8 @@
       'Probabilistic Data Structures',
       'Stream Processing & Top-K Systems',
       'Distributed Locking',
+      'Machine Learning in System Design',
+      'Database Internals',
     ],
   };
 
@@ -585,22 +590,26 @@
   }
 
   function syncReaderButtons(title) {
-    if (!readerTopic) return;
     const isBookmarked = bookmarks.includes(title);
     const isRead       = read.includes(title);
-    elR.bookmark.textContent  = isBookmarked ? '🔖' : '🔖';
-    elR.bookmark.title        = isBookmarked ? 'Remove bookmark' : 'Bookmark';
+    elR.bookmark.innerHTML    = isBookmarked
+      ? '<span title="Remove bookmark" aria-label="Remove bookmark">🔖</span>'
+      : '<span title="Bookmark" aria-label="Bookmark">🔖</span>';
     elR.bookmark.classList.toggle('is-active', isBookmarked);
-    elR.read.textContent      = isRead ? '✅' : '○';
-    elR.read.title            = isRead ? 'Mark as unread' : 'Mark as read';
+    elR.read.innerHTML        = isRead
+      ? '<span aria-label="Mark as unread">✅</span>'
+      : '<span aria-label="Mark as read">○</span>';
     elR.read.classList.toggle('is-active', isRead);
-    elR.markRead.textContent  = isRead ? 'Mark as Unread' : 'Mark as Read';
+    elR.markRead.textContent  = isRead ? '✓ Marked as Read' : 'Mark as Read';
+    elR.markRead.classList.toggle('btn-quiz--done', isRead);
   }
 
   function loadMarkdown(topic) {
+    /* Reset: clear content, show spinner */
+    const loadingEl = elR.loading;
     elR.content.innerHTML = '';
-    elR.content.appendChild(elR.loading);
-    elR.loading.hidden = false;
+    loadingEl.hidden = false;
+    elR.content.appendChild(loadingEl);
     if (elR.body) elR.body.scrollTop = 0;
 
     if (mdCache[topic.path]) {
@@ -632,26 +641,39 @@
   }
 
   function renderMarkdown(md) {
+    /* Preserve loading element reference before clearing */
+    const loadingEl = elR.loading;
+    elR.content.innerHTML = '';
+
     if (typeof marked === 'undefined') {
-      elR.content.innerHTML = `<pre style="white-space:pre-wrap;padding:1rem;line-height:1.6;">${esc(md)}</pre>`;
+      const pre = document.createElement('pre');
+      pre.style.cssText = 'white-space:pre-wrap;padding:1.5rem;line-height:1.6;font-size:0.9rem;';
+      pre.textContent = md;
+      elR.content.appendChild(pre);
       return;
     }
-    /* Configure marked */
-    marked.setOptions({ gfm: true, breaks: false });
+
+    /* marked v9+: use marked.use() for options */
+    try { marked.use({ gfm: true, breaks: false }); } catch (_) {}
     const html = marked.parse(md);
-    /* Preserve loading element, replace rest */
-    elR.content.innerHTML = '';
-    elR.content.appendChild(elR.loading);
-    elR.loading.hidden = true;
+
     const wrapper = document.createElement('div');
     wrapper.innerHTML = html;
+
+    /* Re-attach loading element (hidden) for reuse */
+    loadingEl.hidden = true;
+    elR.content.appendChild(loadingEl);
     elR.content.appendChild(wrapper);
   }
 
   function closeReader() {
-    elR.overlay.hidden = true;
-    document.body.style.overflow = '';
-    readerTopic = null;
+    elR.overlay.classList.add('is-closing');
+    setTimeout(() => {
+      elR.overlay.hidden = true;
+      elR.overlay.classList.remove('is-closing');
+      document.body.style.overflow = '';
+      readerTopic = null;
+    }, 250);
   }
 
   function readerNavigate(dir) {

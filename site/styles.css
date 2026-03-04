@@ -1191,6 +1191,8 @@ mark {
   color: white;
 }
 .btn-quiz--primary:hover { background: var(--primary-dark); border-color: var(--primary-dark); }
+.btn-quiz--done { background: #16a34a; border-color: #16a34a; color: white; }
+.btn-quiz--done:hover { background: #15803d; border-color: #15803d; }
 
 /* ════════════════════════════════
    SHORTCUTS MODAL
@@ -1405,6 +1407,24 @@ kbd {
   align-items: stretch;
   justify-content: flex-end;
   animation: fadeIn 0.2s var(--ease);
+}
+
+.reader-overlay.is-closing {
+  animation: fadeOut 0.25s var(--ease) forwards;
+}
+
+.reader-overlay.is-closing .reader-panel {
+  animation: slideOutRight 0.25s var(--ease) forwards;
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+@keyframes slideOutRight {
+  from { transform: translateX(0); }
+  to   { transform: translateX(100%); }
 }
 
 .reader-panel {

@@ -311,6 +311,25 @@ window.TOPICS = [
     path:  "../docs/advanced/distributed-locking.md"
   },
 
+  {
+    id:         "ratelimiting",
+    title:      "Rate Limiting In Depth",
+    category:   "API & Networking",
+    icon:       "🚦",
+    difficulty: "mid",
+    summary:    "Every algorithm compared (Token Bucket, Leaky Bucket, Sliding Window), distributed rate limiting with Redis, and designing a standalone rate limiter service.",
+    subtopics:  [
+      "Token Bucket — Burst-Friendly Rate Limiting",
+      "Leaky Bucket — Smooth Output Rate",
+      "Fixed Window Counter (and why it's broken)",
+      "Sliding Window Counter — Best of Both Worlds",
+      "Distributed Rate Limiting Architecture",
+      "Rate Limiter Response Headers & Failure Modes",
+    ],
+    tags:  ["rate limiting", "token bucket", "leaky bucket", "sliding window", "redis", "lua", "429", "throttle", "api gateway", "cloudflare"],
+    path:  "../docs/architecture/rate-limiting.md"
+  },
+
   /* ── SEARCH & ANALYTICS ──────────────────────────────────────── */
 
   {
@@ -431,6 +450,26 @@ window.TOPICS = [
     ],
     tags:  ["pagination", "cursor", "keyset", "offset", "infinite scroll", "page depth", "performance"],
     path:  "../docs/scale/pagination.md"
+  },
+
+  {
+    id:         "notifications",
+    title:      "Notification System Design",
+    category:   "Scale & Reliability",
+    icon:       "🔔",
+    difficulty: "mid",
+    summary:    "Reliable multi-channel delivery (push, SMS, email) with fan-out at scale, idempotency, user preferences, retry with DLQ, and 35K notifications/second architecture.",
+    subtopics:  [
+      "Why Notification Systems Are Hard",
+      "Notification Channels & Providers (APNs, FCM, Twilio, SendGrid)",
+      "High-Level Architecture (Kafka fan-out)",
+      "User Preference Service",
+      "Fan-out: One Event → Millions of Users",
+      "Retry Strategy & Dead Letter Queue",
+      "Token Management & Deduplication",
+    ],
+    tags:  ["notifications", "push", "sms", "email", "fcm", "apns", "fan-out", "kafka", "idempotency", "dlq", "twilio", "sendgrid"],
+    path:  "../docs/scale/notification-system.md"
   },
 
   /* ── SECURITY ────────────────────────────────────────────────── */

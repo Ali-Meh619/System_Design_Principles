@@ -27,7 +27,14 @@ Read the prompt and match the "shape":
 | "Sliding window max/min" | **Monotonic Deque** |
 | Bit operations / XOR / subsets of bits | **Bit Manipulation** |
 
-> **Decision shortcut:** If you see two indices over the same array → Two Pointers or Sliding Window. If you see two separate lists/strings → DP or Merge. If you see a graph with costs → Dijkstra. If you see "all" or "every" → Backtracking or DP.
+> **Decision shortcuts:**
+> - Two indices over the **same** array → Two Pointers or Sliding Window
+> - Two **separate** lists/strings → DP or Merge
+> - Graph with costs → Dijkstra; graph with 0/1 costs → 0-1 BFS; negative costs → Bellman-Ford
+> - "All" / "every" / "generate" → Backtracking or DP
+> - "Does pair/complement exist?" → Two-Sum hash map
+> - "k numbers sum to target" → sort + fix outer + two-pointer inner
+> - "Directed graph has cycle?" → DFS 3-color; "undirected?" → simple visited + skip parent
 
 ---
 
@@ -87,6 +94,32 @@ def longestSubarraySum(nums, k):
 - Convert "pair/triple existence" → sort then **two pointers**
 - Convert "grouping by value" → sort then **sweep/merge**
 
+### Pattern D — Two-Sum / Complement Lookup *(most common hash pattern)*
+
+```python
+def twoSum(nums, target):
+    seen = {}
+    for i, x in enumerate(nums):
+        if target - x in seen:
+            return [seen[target - x], i]
+        seen[x] = i
+```
+
+> Generalize: "does a pair / triple / complement exist?" → build the map as you scan, look up what you need.
+
+### Pattern E — Dutch National Flag (3-way partition)
+
+```python
+def sortColors(nums):
+    lo = mid = 0; hi = len(nums) - 1
+    while mid <= hi:
+        if   nums[mid] == 0: nums[lo], nums[mid] = nums[mid], nums[lo]; lo += 1; mid += 1
+        elif nums[mid] == 1: mid += 1
+        else:                nums[mid], nums[hi] = nums[hi], nums[mid]; hi -= 1
+```
+
+> Also called 3-pointer partition. Use whenever you need to partition an array into 3 groups in O(n) / O(1).
+
 **Time/Space:** O(n) / O(n) — or O(n log n) if sorting is required
 
 ---
@@ -118,6 +151,28 @@ return write   # write = new length
 ```
 
 > **Pitfall:** Be explicit about what `write` means — it's the *next free slot*, so the final valid array is `nums[:write]`.
+
+### Pattern C — 3Sum (sort + fix one + inner two pointers)
+
+```python
+def threeSum(nums):
+    nums.sort(); res = []
+    for i in range(len(nums) - 2):
+        if i > 0 and nums[i] == nums[i-1]: continue   # skip outer duplicates
+        l, r = i + 1, len(nums) - 1
+        while l < r:
+            s = nums[i] + nums[l] + nums[r]
+            if   s < 0: l += 1
+            elif s > 0: r -= 1
+            else:
+                res.append([nums[i], nums[l], nums[r]])
+                while l < r and nums[l] == nums[l+1]: l += 1  # skip inner dups
+                while l < r and nums[r] == nums[r-1]: r -= 1
+                l += 1; r -= 1
+    return res
+```
+
+> Pattern generalizes to k-Sum: fix (k-2) outer pointers recursively, run two-pointer at the innermost level. Always sort first.
 
 **Time/Space:** O(n) / O(1)
 
@@ -263,6 +318,35 @@ def search_rotated(nums, target):
     return -1
 ```
 
+### Pattern C — Leftmost / Rightmost Occurrence (find search range)
+
+```python
+import bisect
+
+def searchRange(nums, target):
+    lo = bisect.bisect_left(nums, target)
+    hi = bisect.bisect_right(nums, target) - 1
+    if lo >= len(nums) or nums[lo] != target:
+        return [-1, -1]
+    return [lo, hi]
+```
+
+Or manually: for **leftmost**, use `hi = mid` when `nums[mid] >= target`; for **rightmost**, use `lo = mid + 1` when `nums[mid] <= target`.
+
+### Pattern D — Peak / Mountain Array
+
+```python
+def findPeakElement(nums):
+    lo, hi = 0, len(nums) - 1
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if nums[mid] < nums[mid + 1]:
+            lo = mid + 1          # ascending — peak is to the right
+        else:
+            hi = mid              # descending — peak is here or to the left
+    return lo
+```
+
 > **Pitfall:** Always define the loop invariant — "the answer is still in `[lo, hi]`" — and prove both branches maintain it.
 
 **Time/Space:** O(log n) / O(1)
@@ -336,6 +420,22 @@ def detectCycle(head):
     return None
 ```
 
+### F — Nth Node from End (two pointers with gap K)
+
+```python
+def removeNthFromEnd(head, n):
+    dummy = ListNode(0); dummy.next = head
+    fast = slow = dummy
+    for _ in range(n + 1):   # advance fast n+1 steps
+        fast = fast.next
+    while fast:               # move both until fast hits end
+        slow = slow.next; fast = fast.next
+    slow.next = slow.next.next   # delete target
+    return dummy.next
+```
+
+> When fast reaches `None`, slow is right before the Nth-from-end node. The `+1` offset lets slow stop at the **predecessor** (needed for deletion).
+
 > **Pitfall:** Save `nxt = cur.next` before any rewiring — you will lose the list otherwise.
 
 ---
@@ -405,6 +505,39 @@ def closestValue(root, target):
         root = root.left if target < root.val else root.right
     return closest
 ```
+
+### Pattern D — LCA (Lowest Common Ancestor)
+
+```python
+def lowestCommonAncestor(root, p, q):
+    if not root or root is p or root is q:
+        return root
+    left  = lowestCommonAncestor(root.left,  p, q)
+    right = lowestCommonAncestor(root.right, p, q)
+    return root if left and right else left or right
+```
+
+> **Logic:** if both left and right return non-None, current node is the LCA. Otherwise bubble up whichever side found a match.
+
+### Pattern E — Path-Tracking DFS (root-to-leaf paths)
+
+```python
+def pathSum(root, target):
+    res = []
+    def dfs(node, remaining, path):
+        if not node: return
+        path.append(node.val)
+        if not node.left and not node.right and remaining == node.val:
+            res.append(path[:])
+        else:
+            dfs(node.left,  remaining - node.val, path)
+            dfs(node.right, remaining - node.val, path)
+        path.pop()                           # backtrack
+    dfs(root, target, [])
+    return res
+```
+
+> Use this whenever you need to collect/aggregate along a root-to-leaf path. The `path.pop()` is the backtrack step.
 
 ---
 
@@ -537,6 +670,24 @@ def combinationSum(candidates, target):
 > ```python
 > if i > start and candidates[i] == candidates[i-1]: continue
 > ```
+
+### Pattern D — Grid Word Search (DFS + backtracking)
+
+```python
+def exist(board, word):
+    rows, cols = len(board), len(board[0])
+    def dfs(r, c, i):
+        if i == len(word): return True
+        if not (0 <= r < rows and 0 <= c < cols): return False
+        if board[r][c] != word[i]: return False
+        tmp, board[r][c] = board[r][c], '#'    # mark visited
+        found = any(dfs(r+dr, c+dc, i+1) for dr, dc in [(0,1),(0,-1),(1,0),(-1,0)])
+        board[r][c] = tmp                       # restore (backtrack)
+        return found
+    return any(dfs(r, c, 0) for r in range(rows) for c in range(cols))
+```
+
+> **Trick:** mutate the board cell to `'#'` to mark it visited without an extra set — then restore it. Time: O(rows × cols × 4^len(word)).
 
 **Time:** O(2^n) subsets, O(n!) permutations — backtracking prunes aggressively in practice.
 
@@ -672,6 +823,24 @@ def isBipartite(graph):
                     return False
     return True
 ```
+
+### Pattern E — DFS Cycle Detection in Directed Graph (3-color)
+
+```python
+def hasCycle(n, adj):
+    # 0 = unvisited (white), 1 = in current path (gray), 2 = done (black)
+    state = [0] * n
+    def dfs(u):
+        state[u] = 1                       # mark gray (in stack)
+        for v in adj[u]:
+            if state[v] == 1: return True  # back edge → cycle
+            if state[v] == 0 and dfs(v): return True
+        state[u] = 2                       # mark black (done)
+        return False
+    return any(state[u] == 0 and dfs(u) for u in range(n))
+```
+
+> Use 3-color (not simple `visited`) for **directed** graphs. For undirected graphs, simple `visited` + "don't go to parent" is enough.
 
 ---
 
@@ -869,6 +1038,44 @@ def knapsackUnbounded(weights, values, W):
             dp[cap] = max(dp[cap], dp[cap - w] + v)
     return dp[W]
 ```
+
+### E) State Machine DP *(stock buy/sell family)*
+
+**Recognize:** "buy/sell with cooldown / transaction limit / fee", multiple states per index
+
+```python
+# Best Time to Buy/Sell Stock with Cooldown
+def maxProfit(prices):
+    hold  = float('-inf')   # holding a stock
+    cash  = 0               # not holding, can buy
+    cool  = 0               # cooldown (just sold)
+    for p in prices:
+        hold, cash, cool = max(hold, cash - p), max(cash, cool), hold + p
+    return max(cash, cool)
+```
+
+> **Key insight:** define states that capture all relevant history, then write transitions. With `k` transactions: `dp[i][k][0/1]` (day, txns left, holding/not).
+
+### F) Palindrome DP *(expand-from-center or 2D DP)*
+
+```python
+# Count all palindromic substrings — O(n²) expand-from-center
+def countSubstrings(s):
+    count = 0
+    def expand(l, r):
+        nonlocal count
+        while l >= 0 and r < len(s) and s[l] == s[r]:
+            count += 1; l -= 1; r += 1
+    for i in range(len(s)):
+        expand(i, i)      # odd-length
+        expand(i, i + 1)  # even-length
+    return count
+
+# 2D DP: dp[i][j] = True if s[i..j] is palindrome
+# dp[i][j] = (s[i] == s[j]) and (j - i < 2 or dp[i+1][j-1])
+```
+
+> Manacher's algorithm does this in O(n) but expand-from-center is interview-sufficient and far easier to recall.
 
 ### C) Interval DP *(the "forgotten" DP category)*
 
@@ -1149,6 +1356,30 @@ import math
 isqrt = math.isqrt(n)   # exact integer sqrt, no float
 ```
 
+### Combinatorics
+
+```python
+# nCr mod p using Pascal's triangle — O(n²), use when n ≤ 1000
+def build_pascal(n, MOD):
+    C = [[0] * (n+1) for _ in range(n+1)]
+    for i in range(n+1):
+        C[i][0] = 1
+        for j in range(1, i+1):
+            C[i][j] = (C[i-1][j-1] + C[i-1][j]) % MOD
+    return C
+
+# nCr mod p using Fermat's little theorem — O(n), use when n ≤ 10^6
+def nCr(n, r, MOD):
+    if r > n: return 0
+    num = den = 1
+    for i in range(r):
+        num = num * (n - i) % MOD
+        den = den * (i + 1) % MOD
+    return num * pow(den, MOD - 2, MOD) % MOD   # den^(MOD-2) = modular inverse
+```
+
+> **When:** counting arrangements, paths in grid (only right/down), parentheses expressions, or any "choose k from n" question.
+
 ### Bit Manipulation Patterns
 
 ```python
@@ -1206,32 +1437,42 @@ lowbit = n & (-n)
 | Pattern | Time | Space | Notes |
 |---|---|---|---|
 | Arrays / Hashing | O(n) | O(n) | |
-| Two Pointers | O(n) | O(1) | Array must be sorted for most variants |
+| Two-Sum hash lookup | O(n) | O(n) | Single pass |
+| Dutch National Flag | O(n) | O(1) | 3-pointer in-place partition |
+| Two Pointers (l/r) | O(n) | O(1) | Sorted array |
+| 3Sum | O(n²) | O(1) | Sort + fix outer + inner two pointers |
 | Sliding Window | O(n) | O(k) | k = window constraint |
 | Monotonic Stack | O(n) | O(n) | Each element pushed+popped once |
 | Monotonic Deque | O(n) | O(k) | Sliding window max/min |
 | Binary Search | O(log n) | O(1) | |
 | Linked List ops | O(n) | O(1) | |
+| Nth from end | O(n) | O(1) | Two pointers with gap |
 | Tree DFS | O(n) | O(h) | h = height; O(log n) balanced, O(n) skewed |
 | Tree BFS | O(n) | O(w) | w = max width ≈ n/2 last level |
+| LCA | O(n) | O(h) | Recursive postorder |
 | Heap (top K) | O(n log k) | O(k) | |
 | K-way merge | O(N log k) | O(k) | N = total elements |
 | Backtracking subsets | O(2^n) | O(n) | |
 | Backtracking perms | O(n! × n) | O(n) | |
+| Grid word search | O(rows×cols×4^L) | O(L) | L = word length |
 | Trie insert/search | O(L) | O(A × L × N) | L=word len, A=alphabet, N=words |
 | BFS / DFS (graph) | O(V + E) | O(V) | |
+| Directed cycle (3-color) | O(V + E) | O(V) | DFS with white/gray/black states |
 | Dijkstra | O((V+E) log V) | O(V) | Min-heap |
 | 0-1 BFS | O(V + E) | O(V) | Deque instead of heap |
 | Bellman-Ford | O(V × E) | O(V) | Handles negative edges |
 | Union-Find | O(α(n)) ≈ O(1) | O(n) | With path compression + union by rank |
 | Topological Sort | O(V + E) | O(V) | Kahn's (BFS-based) |
-| 1D DP | O(n) | O(n) or O(1) rolling | |
-| 2D DP | O(n × m) | O(n × m) or O(m) rolling | |
+| 1D DP | O(n) | O(1) rolling | |
+| State machine DP | O(n × states) | O(states) | Stock buy/sell family |
+| Palindrome (expand) | O(n²) | O(1) | Expand-from-center |
+| 2D DP | O(n × m) | O(m) rolling | |
 | Interval DP | O(n³) | O(n²) | n ≤ 500 typical |
 | Bitmask DP | O(2^n × n) | O(2^n) | n ≤ 20 typical |
 | LIS (patience) | O(n log n) | O(n) | |
 | BIT (Fenwick) | O(log n) per op | O(n) | Range sum + point update |
 | Segment Tree | O(log n) per op | O(n) | Range min/max/sum + updates |
+| nCr mod p (Fermat) | O(n) | O(1) | For n ≤ 10^6, MOD prime |
 
 ---
 

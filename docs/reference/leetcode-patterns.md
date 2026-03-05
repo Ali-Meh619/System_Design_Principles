@@ -61,18 +61,23 @@ for i, x in enumerate(nums):
 **Count subarrays with sum = k:**
 
 ```python
-from collections import defaultdict
-
 def subarraySum(nums, k):
-    seen = defaultdict(int)
-    seen[0] = 1          # empty prefix
-    pref = ans = 0
-    for x in nums:
-        pref += x
-        ans += seen[pref - k]
-        seen[pref] += 1
-    return ans
+    count = 0
+    prefix = 0
+    seen = {0: 1}            # empty prefix has been seen once
+
+    for n in nums:
+        prefix += n
+
+        if prefix - k in seen:       # explicit check: don't add 0 for missing keys
+            count += seen[prefix - k]
+
+        seen[prefix] = seen.get(prefix, 0) + 1
+
+    return count
 ```
+
+> **Why `if prefix - k in seen` instead of `count += seen.get(..., 0)`:** the explicit guard makes the intent readable — we only count when a valid complement exists. Both are correct; this form is easier to explain in an interview.
 
 **Longest subarray with sum = k:** store the **earliest index** of each prefix sum (not the count).
 

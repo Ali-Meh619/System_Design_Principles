@@ -1042,55 +1042,91 @@ def bellmanFord(n, edges, src):
 
 ## 13 — Dynamic Programming — Full Coverage
 
-### A) 1D DP (Linear / Rolling)
+### A) 1D DP (Bottom-Up with `dp[]`)
 
 **Recognize:** "max/min/count" with choices per index; "number of ways"; "rob"; "decode ways"; "jump game cost"
 
-**Rule:** define `dp[i]` meaning clearly before coding. The transition must depend only on earlier states.
+**Rule:** always define `dp[i]` in one sentence before writing the transition. The answer is usually `dp[n]` or `max(dp)`.
 
 **Pattern 1 — Take/Skip (House Robber family)**
 
+`dp[i]` = max money robbing houses `0..i`.
+
 ```python
 def rob(nums):
-    take = skip = 0
-    for x in nums:
-        take, skip = skip + x, max(skip, take)
-    return max(take, skip)
+    n = len(nums)
+    if n == 1:
+        return nums[0]
+    dp = [0] * n
+    dp[0] = nums[0]
+    dp[1] = max(nums[0], nums[1])
+    for i in range(2, n):
+        dp[i] = max(dp[i - 1],          # skip house i
+                    dp[i - 2] + nums[i]) # rob house i
+    return dp[n - 1]
 ```
 
-**Pattern 2 — Count Ways (Climb Stairs / Decode Ways)**
+**Pattern 2 — Count Ways (Climb Stairs)**
+
+`dp[i]` = number of ways to reach step `i`.
 
 ```python
 def climbStairs(n):
-    a, b = 1, 1
-    for _ in range(n - 1):
-        a, b = b, a + b
-    return b
+    dp = [0] * (n + 1)
+    dp[0] = 1   # one way to stand at the ground
+    dp[1] = 1
+    for i in range(2, n + 1):
+        dp[i] = dp[i - 1] + dp[i - 2]  # came from step i-1 or i-2
+    return dp[n]
 ```
 
-**Pattern 3 — Kadane (max subarray)**
+**Pattern 3 — Kadane (Max Subarray)**
+
+`dp[i]` = max subarray sum **ending at index i**.
 
 ```python
 def maxSubArray(nums):
-    best = cur = nums[0]
-    for x in nums[1:]:
-        cur = max(x, cur + x)
-        best = max(best, cur)
-    return best
+    n = len(nums)
+    dp = [0] * n
+    dp[0] = nums[0]
+    for i in range(1, n):
+        dp[i] = max(nums[i],            # start fresh at i
+                    dp[i - 1] + nums[i]) # extend previous subarray
+    return max(dp)
 ```
 
-**Pattern 4 — LIS (Longest Increasing Subsequence)**
+> The transition `max(nums[i], dp[i-1] + nums[i])` is the core of Kadane: either start a new subarray here or extend the best one ending before here.
+
+**Pattern 4 — LIS (Longest Increasing Subsequence) — O(n²) dp[]**
+
+`dp[i]` = length of longest increasing subsequence **ending at index i**.
 
 ```python
-import bisect
-
 def lengthOfLIS(nums):
-    tails = []                           # tails[i] = smallest tail of all IS of length i+1
-    for x in nums:
-        pos = bisect.bisect_left(tails, x)
-        if pos == len(tails): tails.append(x)
-        else:                  tails[pos] = x
-    return len(tails)                    # O(n log n)
+    n = len(nums)
+    dp = [1] * n            # every element is a subsequence of length 1
+    for i in range(1, n):
+        for j in range(i):
+            if nums[j] < nums[i]:
+                dp[i] = max(dp[i], dp[j] + 1)
+    return max(dp)
+```
+
+> O(n log n) with patience sorting (binary search on `tails[]`) if needed for large inputs, but the `dp[]` version is easier to derive and explain in an interview.
+
+**Pattern 5 — Coin Change (min coins)**
+
+`dp[i]` = minimum coins needed to make amount `i`.
+
+```python
+def coinChange(coins, amount):
+    dp = [float('inf')] * (amount + 1)
+    dp[0] = 0               # 0 coins needed for amount 0
+    for i in range(1, amount + 1):
+        for coin in coins:
+            if coin <= i:
+                dp[i] = min(dp[i], dp[i - coin] + 1)
+    return dp[amount] if dp[amount] != float('inf') else -1
 ```
 
 ### B) 2D DP (Grids / Strings / Knapsack)
@@ -1574,7 +1610,7 @@ lowbit = n & (-n)
 | Bellman-Ford | O(V × E) | O(V) | Handles negative edges |
 | Union-Find | O(α(n)) ≈ O(1) | O(n) | With path compression + union by rank |
 | Topological Sort | O(V + E) | O(V) | Kahn's (BFS-based) |
-| 1D DP | O(n) | O(1) rolling | |
+| 1D DP (dp[] bottom-up) | O(n) | O(n) dp array; O(1) if space-optimised | |
 | State machine DP | O(n × states) | O(states) | Stock buy/sell family |
 | Palindrome (expand) | O(n²) | O(1) | Expand-from-center |
 | 2D DP | O(n × m) | O(m) rolling | |

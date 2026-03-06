@@ -863,17 +863,14 @@ Build a Trie from all words. DFS the grid, walk the Trie simultaneously. When `n
 ```python
 def bfs_shortest(start, adj):
     q = [start]; dist = {start: 0}
-    i = 0
-    while i < len(q):
-        u = q[i]; i += 1
+    while q:
+        u = q.pop(0)
         for v in adj[u]:
             if v not in dist:
                 dist[v] = dist[u] + 1
                 q.append(v)
     return dist
 ```
-
-> Index-based BFS: advance a pointer `i` instead of popping from the front. Same O(V+E) complexity, no imports needed.
 
 ### Pattern B — Grid BFS/DFS
 
@@ -884,9 +881,8 @@ def numIslands(grid):
     visited = set(); count = 0
     def bfs(r, c):
         q = [(r, c)]; visited.add((r, c))
-        i = 0
-        while i < len(q):
-            row, col = q[i]; i += 1
+        while q:
+            row, col = q.pop(0)
             for dr, dc in [(1,0),(-1,0),(0,1),(0,-1)]:
                 nr, nc = row+dr, col+dc
                 if 0<=nr<rows and 0<=nc<cols and grid[nr][nc]=='1' and (nr,nc) not in visited:
@@ -907,13 +903,14 @@ def topoSort(n, edges):
     for u, v in edges:
         adj[u].append(v); indeg[v] += 1
     q = [i for i in range(n) if indeg[i] == 0]
-    i = 0
-    while i < len(q):
-        u = q[i]; i += 1
+    order = []
+    while q:
+        u = q.pop(0)
+        order.append(u)
         for v in adj[u]:
             indeg[v] -= 1
             if indeg[v] == 0: q.append(v)
-    return q if len(q) == n else []          # [] = cycle detected
+    return order if len(order) == n else []  # [] = cycle detected
 ```
 
 ### Pattern D — Bipartite Check (2-coloring)
@@ -924,9 +921,8 @@ def isBipartite(graph):
     for start in range(len(graph)):
         if start in color: continue
         q = [start]; color[start] = 0
-        i = 0
-        while i < len(q):
-            u = q[i]; i += 1
+        while q:
+            u = q.pop(0)
             for v in graph[u]:
                 if v not in color:
                     color[v] = 1 - color[u]; q.append(v)
@@ -938,20 +934,30 @@ def isBipartite(graph):
 ### Pattern E — DFS Cycle Detection in Directed Graph (3-color)
 
 ```python
-def hasCycle(n, adj):
-    # 0 = unvisited (white), 1 = in current path (gray), 2 = done (black)
-    state = [0] * n
-    def dfs(u):
-        state[u] = 1                       # mark gray (entering)
-        for v in adj[u]:
-            if state[v] == 1:
-                return True                # back edge → cycle found
-            if state[v] == 0:
-                if dfs(v):
-                    return True            # cycle detected deeper
-        state[u] = 2                       # mark black (fully explored)
+def hasCycle(n, graph):
+    state = [0] * n   # 0=unvisited, 1=visiting, 2=visited
+
+    def dfs(node):
+        if state[node] == 1:   # back edge → cycle
+            return True
+        if state[node] == 2:   # already fully processed
+            return False
+
+        state[node] = 1        # mark visiting
+
+        for nei in graph[node]:
+            if dfs(nei):
+                return True
+
+        state[node] = 2        # mark finished
         return False
-    return any(state[u] == 0 and dfs(u) for u in range(n))
+
+    for i in range(n):
+        if state[i] == 0:
+            if dfs(i):
+                return True
+
+    return False
 ```
 
 > Use 3-color (not simple `visited`) for **directed** graphs. For undirected graphs, simple `visited` + "don't go to parent" is enough.

@@ -644,7 +644,7 @@ window.TOPICS = [
     category:   "Reference",
     icon:       "🏗️",
     difficulty: "intermediate",
-    summary:    "Object-oriented design for interviews: SOLID principles, 13 design patterns with code (Singleton, Factory, Builder, Observer, Strategy, State, Command, Decorator, Composite), 7 classic LLD questions fully implemented (LRU Cache, Parking Lot, Elevator, Rate Limiter, KV Store, Pub/Sub, ATM), concurrency patterns, and a design-pattern selector table.",
+    summary:    "Object-oriented design for interviews: SOLID principles, 10 design patterns with code, 11 classic LLD questions fully implemented (LRU Cache, Parking Lot, Elevator, Rate Limiter, KV Store, Tic-Tac-Toe, Logger, Library), concurrency patterns, and a design-pattern selector table.",
     subtopics:  [
       "LLD Interview Framework (6-step approach)",
       "SOLID Principles — one rule + violation signal per principle",
@@ -664,11 +664,15 @@ window.TOPICS = [
       "In-Memory KV Store — lazy TTL expiry",
       "Pub/Sub Message Broker — topic-based delivery",
       "ATM — full State machine walkthrough",
+      "Tic-Tac-Toe — O(1) state array pattern",
+      "Transactional KV Store — begin, commit, rollback",
+      "Logging Framework — Chain of Responsibility",
+      "Library Management — entity modeling & relationships",
       "Concurrency patterns — Lock, RLock, Condition, Queue",
       "Design Pattern Selector table",
-      "LLD Interview Cheat Sheet (12 questions mapped to patterns)",
+      "LLD Interview Cheat Sheet (16 questions mapped to patterns)",
     ],
-    tags:  ["lld", "oop", "design patterns", "solid", "singleton", "factory", "observer", "strategy", "state", "lru cache", "parking lot", "elevator", "concurrency", "object oriented", "interview"],
+    tags:  ["lld", "oop", "design patterns", "solid", "singleton", "factory", "observer", "strategy", "state", "lru cache", "parking lot", "elevator", "tic-tac-toe", "concurrency", "object oriented", "interview"],
     path:  "../docs/reference/low-level-design.md"
   },
 

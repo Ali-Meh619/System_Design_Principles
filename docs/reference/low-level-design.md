@@ -620,6 +620,187 @@ class ATM:
 
 ---
 
+### 8. Tic-Tac-Toe (Board Game Pattern)
+
+**Pattern:** 2D Array State + O(1) win condition checking (keep counts of rows/cols/diags instead of scanning the board).
+
+```python
+class TicTacToe:
+    def __init__(self, n: int):
+        self.n = n
+        self.rows = [0] * n
+        self.cols = [0] * n
+        self.diag1 = 0
+        self.diag2 = 0
+
+    def move(self, row: int, col: int, player: int) -> int:
+        """Player 1 is +1, Player 2 is -1. Return winner (1/2) or 0."""
+        val = 1 if player == 1 else -1
+
+        self.rows[row] += val
+        self.cols[col] += val
+        if row == col:
+            self.diag1 += val
+        if row + col == self.n - 1:
+            self.diag2 += val
+
+        # Check if absolute value equals n (meaning all 1s or all -1s)
+        if (abs(self.rows[row]) == self.n or 
+            abs(self.cols[col]) == self.n or 
+            abs(self.diag1) == self.n or 
+            abs(self.diag2) == self.n):
+            return player
+
+        return 0
+```
+
+---
+
+### 9. Transactional Key-Value Store (Begin / Commit / Rollback)
+
+**Pattern:** Stack of dictionaries to manage transaction scopes.
+
+```python
+class TransactionalKV:
+    def __init__(self):
+        self.main_store = {}
+        self.transaction_stack = []
+
+    def set(self, key, value):
+        if self.transaction_stack:
+            self.transaction_stack[-1][key] = value
+        else:
+            self.main_store[key] = value
+
+    def get(self, key):
+        # Search from newest transaction down to main store
+        for tx in reversed(self.transaction_stack):
+            if key in tx:
+                return tx[key]
+        return self.main_store.get(key, None)
+
+    def delete(self, key):
+        self.set(key, None)  # Use None as a tombstone
+
+    def begin(self):
+        self.transaction_stack.append({})
+
+    def commit(self):
+        if not self.transaction_stack:
+            raise Exception("No active transaction")
+        
+        # Merge all transactions down into main_store
+        for tx in self.transaction_stack:
+            for k, v in tx.items():
+                if v is None:
+                    self.main_store.pop(k, None)
+                else:
+                    self.main_store[k] = v
+        self.transaction_stack.clear()
+
+    def rollback(self):
+        if not self.transaction_stack:
+            raise Exception("No active transaction")
+        self.transaction_stack.pop()
+```
+
+---
+
+### 10. Logging Framework (Chain of Responsibility)
+
+**Pattern:** Chain of Responsibility (Loggers pass messages up the chain based on severity level) + Strategy (Appenders format/write the output).
+
+```python
+from enum import IntEnum
+
+class LogLevel(IntEnum):
+    DEBUG = 1; INFO = 2; WARN = 3; ERROR = 4
+
+class LogAppender:
+    def write(self, msg: str): pass
+
+class ConsoleAppender(LogAppender):
+    def write(self, msg: str): print(f"CONSOLE: {msg}")
+
+class Logger:
+    def __init__(self, level: LogLevel, appenders: list):
+        self.level = level
+        self.appenders = appenders
+        self.next_logger = None
+
+    def set_next(self, next_logger):
+        self.next_logger = next_logger
+
+    def log(self, level: LogLevel, msg: str):
+        if level >= self.level:
+            for appender in self.appenders:
+                appender.write(f"[{level.name}] {msg}")
+        if self.next_logger:
+            self.next_logger.log(level, msg)
+
+# Usage Setup
+debug_logger = Logger(LogLevel.DEBUG, [ConsoleAppender()])
+error_logger = Logger(LogLevel.ERROR, [ConsoleAppender()])  # In reality: FileAppender
+debug_logger.set_next(error_logger)
+
+debug_logger.log(LogLevel.INFO, "System started")  # Handled by debug_logger
+debug_logger.log(LogLevel.ERROR, "Crash!")         # Handled by BOTH
+```
+
+---
+
+### 11. Library Management System
+
+**Pattern:** Heavy entity modeling. Focus on relationships (`BookItem` vs `Book`) and state changes (Checkout/Return).
+
+```python
+from enum import Enum
+from datetime import datetime, timedelta
+
+class BookFormat(Enum): HARDCOVER = 1; PAPERBACK = 2; EBOOK = 3
+class BookStatus(Enum): AVAILABLE = 1; RESERVED = 2; LOANED = 3; LOST = 4
+
+class Book:
+    # Represents the abstract concept of a book (e.g., "The Hobbit")
+    def __init__(self, isbn, title, author):
+        self.isbn = isbn
+        self.title = title
+        self.author = author
+
+class BookItem(Book):
+    # Represents a physical copy of the book on a shelf
+    def __init__(self, barcode, isbn, title, author, is_reference_only=False):
+        super().__init__(isbn, title, author)
+        self.barcode = barcode
+        self.is_reference_only = is_reference_only
+        self.status = BookStatus.AVAILABLE
+        self.due_date = None
+
+    def checkout(self, member_id):
+        if self.is_reference_only or self.status != BookStatus.AVAILABLE:
+            return False
+        self.status = BookStatus.LOANED
+        self.due_date = datetime.now() + timedelta(days=14)
+        return True
+
+class Member:
+    def __init__(self, member_id, name):
+        self.member_id = member_id
+        self.name = name
+        self.checked_out_books = []
+        self.MAX_BOOKS = 5
+
+    def checkout_book(self, book_item: BookItem):
+        if len(self.checked_out_books) >= self.MAX_BOOKS:
+            return False
+        if book_item.checkout(self.member_id):
+            self.checked_out_books.append(book_item)
+            return True
+        return False
+```
+
+---
+
 ## Concurrency in LLD
 
 Most LLD questions in senior interviews require thread-safe implementations.
@@ -708,3 +889,7 @@ class PrinterQueue:
 | Notification System | Factory + Observer | `NotificationFactory`, `EmailNotification`, `SMSNotification` |
 | File System | Composite | `File`, `Directory (FileSystemItem)` |
 | Coffee / Pizza (add-ons) | Decorator | `BaseCoffee`, `MilkDecorator`, `SugarDecorator` |
+| Tic-Tac-Toe | O(1) State Tracking | `TicTacToe`, row/col arrays |
+| Transactional KV Store | Stack of HashMaps | `TransactionalKV`, `begin/commit/rollback` |
+| Logging Framework | Chain of Responsibility | `Logger`, `LogAppender`, `LogLevel` |
+| Library System | Inheritance / Entities | `Book`, `BookItem`, `Member` |

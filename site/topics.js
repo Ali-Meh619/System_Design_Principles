@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════
-   System Design Playbook — Topics
-   39 sections across 10 categories
+   System Design & ML Playbook — Topics
+   42 sections across 11 categories
    ═══════════════════════════════════════════════════════════════ */
 window.TOPICS = [
 
@@ -634,6 +634,68 @@ window.TOPICS = [
     ],
     tags:  ["mobile", "offline", "sync", "push notification", "battery", "delta sync", "apns", "fcm", "bandwidth"],
     path:  "../docs/advanced/mobile-system-design.md"
+  },
+
+  /* ── MACHINE LEARNING ────────────────────────────────────────── */
+
+  {
+    id:         "classic-ml",
+    title:      "Classic Machine Learning",
+    category:   "Machine Learning",
+    icon:       "📈",
+    difficulty: "beginner",
+    summary:    "Core machine learning fundamentals asked in interviews: supervised vs unsupervised, evaluation metrics, and classic algorithms.",
+    subtopics:  [
+      "Supervised vs Unsupervised Learning",
+      "Bias-Variance Tradeoff",
+      "Evaluation Metrics (Precision, Recall, F1, ROC/AUC)",
+      "Linear and Logistic Regression",
+      "Decision Trees and Random Forests",
+      "Support Vector Machines (SVM)",
+      "K-Means and PCA",
+      "Feature Engineering and Preprocessing"
+    ],
+    tags:  ["ml", "machine learning", "regression", "classification", "random forest", "svm", "pca", "metrics", "interview"],
+    path:  "../docs/machine-learning/classic-ml.md"
+  },
+
+  {
+    id:         "deep-learning",
+    title:      "Deep Learning",
+    category:   "Machine Learning",
+    icon:       "🧠",
+    difficulty: "intermediate",
+    summary:    "Deep learning architectures and optimization concepts, from basic neural networks to CNNs and RNNs.",
+    subtopics:  [
+      "Neural Network Fundamentals (Activation Functions)",
+      "Optimization (Gradient Descent, Backpropagation, Adam)",
+      "Regularization (Dropout, Batch Normalization)",
+      "CNNs (Convolutions, Pooling, ResNet)",
+      "RNNs and LSTMs (Sequence modeling)",
+      "Loss Functions (Cross-Entropy, MSE)"
+    ],
+    tags:  ["dl", "deep learning", "neural networks", "cnn", "rnn", "lstm", "backpropagation", "adam", "regularization", "interview"],
+    path:  "../docs/machine-learning/deep-learning.md"
+  },
+
+  {
+    id:         "llm-interviews",
+    title:      "LLM Interview Questions",
+    category:   "Machine Learning",
+    icon:       "💬",
+    difficulty: "advanced",
+    summary:    "Modern GenAI concepts for engineering interviews: Transformers, RAG, Fine-Tuning, and Prompt Engineering.",
+    subtopics:  [
+      "Transformers Architecture (Self-Attention)",
+      "Pre-training vs Fine-tuning",
+      "Parameter-Efficient Fine-Tuning (LoRA, QLoRA)",
+      "Retrieval-Augmented Generation (RAG)",
+      "Prompt Engineering (Chain-of-Thought, Few-Shot)",
+      "LLM Evaluation (BLEU, ROUGE, LLM-as-a-judge)",
+      "Inference Optimization (KV Cache, Quantization)"
+    ],
+    tags:  ["llm", "genai", "generative ai", "transformers", "rag", "lora", "fine-tuning", "prompt engineering", "interview"],
+    path:  "../docs/machine-learning/llm-interviews.md"
   },
 
   /* ── REFERENCE ───────────────────────────────────────────────── */

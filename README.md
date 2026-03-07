@@ -2,9 +2,9 @@
 
 <br>
 
-# ⚡ System Design Playbook
+# ⚡ System Design & Machine Learning Playbook
 
-### The most comprehensive, interactive system design reference — built for engineers cracking technical interviews.
+### The most comprehensive, interactive system design and ML reference — built for engineers cracking technical interviews.
 
 <br>
 
@@ -12,7 +12,7 @@
 [![Forks](https://img.shields.io/github/forks/Ali-Meh619/System_Design_Principles?style=for-the-badge&color=0d9488&logo=github)](https://github.com/Ali-Meh619/System_Design_Principles/network/members)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=for-the-badge)](CONTRIBUTING.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
-[![Topics](https://img.shields.io/badge/Topics-37-purple?style=for-the-badge)](docs/)
+[![Topics](https://img.shields.io/badge/Topics-42-purple?style=for-the-badge)](docs/)
 [![Interactive](https://img.shields.io/badge/Site-Live-success?style=for-the-badge&logo=github)](https://ali-meh619.github.io/System_Design_Principles/)
 
 <br>
@@ -34,11 +34,11 @@ Most system design resources are scattered blog posts or 400-page books. This re
 
 | Feature | Description |
 |---------|-------------|
-| 🎯 **37 interview-ready topics** | Every domain: distributed systems, databases, security, AI, and more |
+| 🎯 **42 interview-ready topics** | Every domain: distributed systems, machine learning, databases, security, and more |
 | 🌙 **Dark / Light mode** | Persisted preference, instant toggle with `d` |
 | ✅ **Progress tracking** | Mark topics as read. Your progress saves locally. |
 | 🔖 **Bookmarks** | Save topics to revisit. Accessible from any page. |
-| 🃏 **Quiz / Flashcard mode** | Randomized flashcard review across all 37 topics |
+| 🃏 **Quiz / Flashcard mode** | Randomized flashcard review across all 42 topics |
 | 📖 **Inline reader** | Read every topic without leaving the page — with prev/next navigation |
 | ⌨️ **Keyboard-first** | `/` search, `q` quiz, `b` bookmarks, `?` shortcuts |
 | 📊 **Visual progress bar** | See your overall completion at a glance |
@@ -49,7 +49,7 @@ Most system design resources are scattered blog posts or 400-page books. This re
 
 ---
 
-## 🗂️ Topic Coverage (37 Topics)
+## 🗂️ Topic Coverage (42 Topics)
 
 <details>
 <summary><strong>🟠 Foundation (4)</strong></summary>
@@ -129,6 +129,15 @@ Most system design resources are scattered blog posts or 400-page books. This re
 - 🧠 [AI Agent System Design](docs/advanced/ai-agent-system-design.md) — Planner/tool/memory anatomy, multi-agent patterns, safety, LLM-as-a-Judge
 - 🎲 [Probabilistic Data Structures](docs/advanced/probabilistic-data-structures.md) — Bloom filter, HyperLogLog, Count-Min Sketch at massive scale
 - 📱 [Mobile System Design](docs/advanced/mobile-system-design.md) — Offline-first, delta sync, push notifications (APNs/FCM), battery constraints
+
+</details>
+
+<details>
+<summary><strong>🪩 Machine Learning (3)</strong></summary>
+
+- 📈 [Classic Machine Learning](docs/machine-learning/classic-ml.md) — Supervised/Unsupervised learning, Random Forests, SVMs, PCA, evaluation metrics
+- 🧠 [Deep Learning](docs/machine-learning/deep-learning.md) — Neural networks, Backpropagation, CNNs, RNNs, optimizers, dropout
+- 💬 [LLM Interview Questions](docs/machine-learning/llm-interviews.md) — Transformers, Attention mechanism, RAG, Fine-tuning, LoRA, Prompt Engineering
 
 </details>
 
@@ -234,6 +243,7 @@ System_Design_Principles/
 │   ├── scale/                  # Observability, HA, ID gen, pagination, notifications
 │   ├── security/               # Auth, privacy, compliance
 │   ├── advanced/               # ML, AI agents, probabilistic DS, collaboration
+│   ├── machine-learning/       # Classic ML, Deep Learning, LLM interview questions
 │   └── reference/              # Design templates (12 blueprints), scenario cheat sheet
 └── assets/                     # Architecture diagram images
 ```

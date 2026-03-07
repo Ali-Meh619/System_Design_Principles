@@ -1,6 +1,6 @@
-# System Design Playbook — Documentation
+# System Design & Machine Learning Playbook — Documentation
 
-> **39 in-depth topics** covering everything from interview frameworks to AI agent architectures. Each file is designed to be a complete reference — not a summary.
+> **42 in-depth topics** covering everything from interview frameworks to AI agent architectures and Machine Learning concepts. Each file is designed to be a complete reference — not a summary.
 
 ---
 
@@ -16,11 +16,12 @@
 | [📈 Scale & Reliability](scale/README.md) | 6 | 🟡–🔴 | Observability, HA, IDs, pagination, notifications |
 | [🔐 Security](security/README.md) | 2 | 🟡 | Auth, OAuth 2.0, encryption, GDPR |
 | [🧠 AI & Advanced](advanced/README.md) | 5 | 🔴 | ML systems, AI agents, probabilistic structures |
+| [🪩 Machine Learning](machine-learning/README.md) | 3 | 🟡-🔴 | Classic ML, Deep Learning, LLM interview questions |
 | [📋 Reference](reference/README.md) | 2 | 🟢 | Cheat sheets, design templates |
 
 ---
 
-## 📚 All 39 Topics
+## 📚 All 42 Topics
 
 ### 📐 Foundation
 - [Interview Framework — The Universal 4-Step Approach](fundamentals/interview-framework.md)
@@ -72,6 +73,11 @@
 - [Real-time Collaboration (Google Docs)](advanced/collaboration-editing.md)
 - [Webhooks System Design](advanced/webhooks.md)
 - [Mobile System Design](advanced/mobile-system-design.md)
+
+### 🪩 Machine Learning
+- [Classic Machine Learning](machine-learning/classic-ml.md) ⭐ New
+- [Deep Learning](machine-learning/deep-learning.md) ⭐ New
+- [LLM Interview Questions](machine-learning/llm-interviews.md) ⭐ New
 
 ### 📋 Reference
 - [Common Scenarios & Cheat Sheets](reference/scenario-cheat-sheet.md)

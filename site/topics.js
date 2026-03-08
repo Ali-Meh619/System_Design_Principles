@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════
    System Design & ML Playbook — Topics
-   40 sections across 10 categories
+   41 sections across 10 categories
    ═══════════════════════════════════════════════════════════════ */
 window.TOPICS = [
 
@@ -532,12 +532,12 @@ window.TOPICS = [
     path:  "../docs/security/privacy-and-compliance.md"
   },
 
-  /* ── AI & ADVANCED ───────────────────────────────────────────── */
+  /* ── AI & MACHINE LEARNING ──────────────────────────────────── */
 
   {
     id:         "advanced",
     title:      "Advanced Data Patterns",
-    category:   "AI & Machine Learning",
+    category:   "Scale & Reliability",
     icon:       "🔁",
     difficulty: "advanced",
     summary:    "Pre-computation and materialized views, ETL vs ELT, hot spot problem, and backfill/reprocessing patterns.",

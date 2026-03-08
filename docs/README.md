@@ -1,6 +1,6 @@
 # System Design & Machine Learning Playbook — Documentation
 
-> **40 in-depth topics** covering everything from interview frameworks to AI agent architectures and Machine Learning concepts. Each file is designed to be a complete reference — not a summary.
+> **41 in-depth topics** covering everything from interview frameworks to AI agent architectures and Machine Learning concepts. Each file is designed to be a complete reference — not a summary.
 
 ---
 
@@ -10,17 +10,18 @@
 |----------|--------|-------|-------------|
 | [📐 Foundation](fundamentals/README.md) | 4 | 🟢–🟡 | Interview structure, estimation, I/O, networking |
 | [🗄️ Data Storage](data/README.md) | 5 | 🟢–🔴 | Databases, caching, queues, CDN, internals |
-| [🔌 API & Networking](architecture/README.md) | 5 | 🟢–🟡 | REST/gRPC/GraphQL, load balancing, rate limiting, WebSocket |
+| [🔌 API & Networking](architecture/README.md) | 4 | 🟢–🟡 | REST/gRPC/GraphQL, load balancing, rate limiting, WebSocket |
 | [🌐 Distributed Systems](distributed/README.md) | 5 | 🟡–🔴 | CAP, consistency, patterns, microservices, resilience |
 | [🔍 Search & Analytics](search/README.md) | 4 | 🟡–🔴 | Inverted index, typeahead, stream processing, geo, probabilistic DS |
-| [📈 Scale & Reliability](scale/README.md) | 6 | 🟡–🔴 | Observability, HA, IDs, pagination, notifications |
+| [📈 Scale & Reliability](scale/README.md) | 7 | 🟡–🔴 | Observability, HA, IDs, pagination, notifications, advanced data patterns |
 | [🔐 Security](security/README.md) | 2 | 🟡 | Auth, OAuth 2.0, encryption, GDPR |
 | [🩷 AI & Machine Learning](advanced/README.md) | 5 | 🟡–🔴 | ML systems, AI agents, Classic ML, Deep Learning, LLMs |
+| [🩵 Specialized Systems](advanced/README.md) | 2 | 🟡–🔴 | Real-time collaboration (OT/CRDT), Webhooks |
 | [📋 Reference](reference/README.md) | 4 | 🟢–🟡 | Cheat sheets, design templates, LeetCode patterns, LLD |
 
 ---
 
-## 📚 All 40 Topics
+## 📚 All 41 Topics
 
 ### 📐 Foundation
 - [Interview Framework — The Universal 4-Step Approach](fundamentals/interview-framework.md)
@@ -129,13 +130,13 @@ Week 2:
 
 ```
 1. Complete Paths 1 + 2
-2. ML in System Design
-3. AI Agent System Design
-4. Probabilistic Data Structures
-5. Real-time Collaboration (CRDT vs OT)
-6. Microservices vs Monolith (deep dive)
-7. Mobile System Design
-8. Webhooks at Scale
+2. ML in System Design + AI Agent System Design
+3. Classic Machine Learning + Deep Learning
+4. LLM Interview Questions (RAG, fine-tuning, inference)
+5. Probabilistic Data Structures
+6. Real-time Collaboration (CRDT vs OT)
+7. Webhooks at Scale
+8. LeetCode Question Patterns + Low-Level System Design
 ```
 
 ---
@@ -218,4 +219,4 @@ Missing a topic? Open an issue with the title "Topic Request: [topic name]".
 
 ---
 
-*Last updated: March 2026 | 39 topics across 10 categories*
+*Last updated: March 2026 | 41 topics across 10 categories*

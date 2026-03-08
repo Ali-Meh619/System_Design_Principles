@@ -20,7 +20,7 @@
 [![Forks](https://img.shields.io/github/forks/Ali-Meh619/System_Design_ML_Principles?style=for-the-badge&color=0d9488&logo=github)](https://github.com/Ali-Meh619/System_Design_ML_Principles/network/members)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=for-the-badge)](CONTRIBUTING.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
-[![Topics](https://img.shields.io/badge/Topics-40-purple?style=for-the-badge)](docs/)
+[![Topics](https://img.shields.io/badge/Topics-41-purple?style=for-the-badge)](docs/)
 [![Interactive](https://img.shields.io/badge/Site-Live-success?style=for-the-badge&logo=github)](https://ali-meh619.github.io/System_Design_ML_Principles/)
 
 <br>
@@ -42,11 +42,11 @@ Most system design resources are scattered blog posts or 400-page books. This re
 
 | Feature | Description |
 |---------|-------------|
-| 🎯 **40 interview-ready topics** | Every domain: distributed systems, machine learning, databases, security, and more |
+| 🎯 **41 interview-ready topics** | Every domain: distributed systems, machine learning, databases, security, and more |
 | 🌙 **Dark / Light mode** | Persisted preference, instant toggle with `d` |
 | ✅ **Progress tracking** | Mark topics as read. Your progress saves locally. |
 | 🔖 **Bookmarks** | Save topics to revisit. Accessible from any page. |
-| 🃏 **Quiz / Flashcard mode** | Randomized flashcard review across all 40 topics |
+| 🃏 **Quiz / Flashcard mode** | Randomized flashcard review across all 41 topics |
 | 📖 **Inline reader** | Read every topic without leaving the page — with prev/next navigation |
 | ⌨️ **Keyboard-first** | `/` search, `q` quiz, `b` bookmarks, `?` shortcuts |
 | 📊 **Visual progress bar** | See your overall completion at a glance |
@@ -57,7 +57,7 @@ Most system design resources are scattered blog posts or 400-page books. This re
 
 ---
 
-## 🗂️ Topic Coverage (40 Topics)
+## 🗂️ Topic Coverage (41 Topics)
 
 <details>
 <summary><strong>🟠 Foundation (4)</strong></summary>
@@ -151,10 +151,12 @@ Most system design resources are scattered blog posts or 400-page books. This re
 </details>
 
 <details>
-<summary><strong>🟦 Reference (2)</strong></summary>
+<summary><strong>🟦 Reference (4)</strong></summary>
 
-- 🎯 [Common Scenarios & Solutions](docs/reference/scenario-cheat-sheet.md) — 9 cheat-sheet patterns: read-heavy, write-heavy, realtime, search, Top-K, fan-out, files, global consistency, collaboration
+- 🎯 [Common Scenarios & Solutions](docs/reference/scenario-cheat-sheet.md) — 13 scenario cheat sheets: read-heavy, write-heavy, real-time, search/geo, Top-K, fan-out, file storage, collaborative editing, rate limiting, notifications, auth, unique IDs
 - 📋 [Reusable Design Templates](docs/reference/reusable-design-templates.md) — 12 full blueprints with architecture diagrams: YouTube, Twitter, WhatsApp, Uber, TinyURL, Rate Limiter, Metrics, TicketMaster, AI Agent, Typeahead, Google Docs, LeetCode
+- 🧩 [LeetCode Question Patterns](docs/reference/leetcode-patterns.md) — 21 algorithm patterns with code templates: arrays, two pointers, sliding window, trees, graphs, DP, backtracking, tries, segment tree, and more
+- 🏗️ [Low-Level System Design (LLD)](docs/reference/low-level-design.md) — SOLID principles, 10 design patterns with code, 11 classic LLD questions (LRU Cache, Parking Lot, Elevator, Rate Limiter, ATM, Tic-Tac-Toe, Logger, Library)
 
 </details>
 
@@ -235,7 +237,7 @@ System_Design_ML_Principles/
 │   ├── styles.css              # Full design system with dark/light mode
 │   ├── app.js                  # All interactive features
 │   └── topics.js               # Topic registry with icons, difficulty, tags, paths
-├── docs/                       # 37 topic documents
+├── docs/                       # 41 topic documents
 │   ├── fundamentals/           # Interview framework, estimation, I/O, networking
 │   ├── architecture/           # APIs, load balancing, rate limiting, realtime, CDN
 │   ├── data/                   # Databases, caching, queues, internals

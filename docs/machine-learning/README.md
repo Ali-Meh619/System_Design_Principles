@@ -8,7 +8,7 @@
 
 | # | Topic | Difficulty | What You'll Learn |
 |---|-------|-----------|------------------|
-| 1 | [Machine Learning in System Design](ml-in-system-design.md) | 🔴 Advanced | ML system architecture, feature store, model serving |
+| 1 | [Machine Learning in System Design](ml-in-system-design.md) | 🔴 Advanced | ML system architecture, feature store, recommendation and ranking, rollout, drift, model serving |
 | 2 | [AI Agent System Design](ai-agent-system-design.md) | 🔴 Advanced | Agent anatomy, cognitive architectures, multi-agent patterns |
 | 3 | [Classic Machine Learning](classic-ml.md) | 🟡 Intermediate | Bias-variance, bagging vs boosting, data leakage, XGBoost, SVM, PCA |
 | 4 | [Deep Learning](deep-learning.md) | 🟡 Intermediate | Weight init, backprop, Adam, BatchNorm, CNNs, LSTMs, Transformers |
@@ -37,6 +37,8 @@ Theory / modeling focus:
 
 ### ML in System Design
 - "Design a recommendation system for Netflix."
+- "How would you rank a home feed differently from search results?"
+- "What metrics would you use for ranking quality offline and online?"
 - "Design a fraud detection system for Stripe."
 - "What is the role of a Feature Store? Why do we need it?"
 
@@ -74,6 +76,8 @@ Theory / modeling focus:
 | Concept | One-line answer |
 |---------|----------------|
 | **Feature Store** | Prevents training-serving skew by providing the exact same features to both |
+| **NDCG@K** | Measures whether the most relevant results appear near the top of a ranking |
+| **Explore vs Exploit** | Balance immediate performance with learning new user preferences |
 | **ReAct Agent** | Pattern where agent iterates through Reason → Act → Observe |
 | **Bias vs Variance** | Bias = model too simple; Variance = model too sensitive to training data |
 | **L1 vs L2** | L1 → sparsity (zeroes weights); L2 → shrinks weights evenly |

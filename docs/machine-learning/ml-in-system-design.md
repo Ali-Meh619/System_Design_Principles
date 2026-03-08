@@ -61,6 +61,112 @@ Every major platform (Netflix, Spotify, YouTube, Amazon) uses a **two-stage reco
 
 ---
 
+## Ranking Metrics That Actually Matter
+
+Recommendation and ranking systems are usually judged by **ordering quality**, not just binary classification accuracy.
+
+| Metric | What it measures | Best for |
+|--------|------------------|----------|
+| **NDCG@K** | Whether highly relevant items appear near the top | Feeds, search, recommendations |
+| **MRR** | How quickly the first relevant item appears | Search, Q&A retrieval, autocomplete |
+| **MAP** | Average ranking quality across many relevant items | Information retrieval |
+| **AUC** | Pairwise ordering quality across positives/negatives | Click prediction, ads |
+| **CTR / Conversion** | Actual online user response | Final product impact |
+
+### Rule of thumb
+
+- Use **NDCG@K** when rank position matters a lot
+- Use **MRR** when one good result near the top is enough
+- Never ship based on offline ranking metrics alone; always confirm with online metrics like CTR, watch time, retention, or revenue
+
+---
+
+## Multi-Stage Ranking Architecture
+
+Modern ranking systems are usually not "one model, one pass." They are a cascade:
+
+```text
+Millions of items
+   ↓
+Stage 1: Retrieval / Candidate Generation
+   - ANN / embeddings / heuristics
+   - goal: high recall, low latency
+   ↓
+Stage 2: Lightweight Ranker
+   - cheap model scores hundreds/thousands of items
+   - goal: remove obvious weak candidates
+   ↓
+Stage 3: Heavy Ranker / Re-ranker
+   - richer features, bigger model
+   - goal: final ordering of top 20-100 items
+   ↓
+Stage 4: Business Rules / Diversity / Safety
+   - dedupe, freshness, moderation, quotas
+```
+
+### Why this wins
+
+- Retrieval optimizes **speed and recall**
+- Re-ranking optimizes **precision and user value**
+- The expensive model only runs on a tiny subset
+
+This pattern shows up in search, recommendations, ads, and feed ranking.
+
+---
+
+## Explore vs Exploit
+
+Purely exploiting the best-known content looks great short-term but prevents the system from learning new user interests.
+
+| Strategy | Benefit | Risk |
+|----------|---------|------|
+| **Pure exploit** | Highest immediate CTR | Feedback loops, stale recommendations |
+| **Random exploration** | Learns broadly | Hurts user experience if too noisy |
+| **Contextual bandits / controlled exploration** | Best balance | More complexity and measurement required |
+
+### Common product pattern
+
+- reserve a small slice of traffic or slots for exploration
+- keep most slots exploit-heavy
+- log impressions, clicks, skips, and long-term outcomes
+
+This is how ranking systems avoid getting trapped showing only the same popular items forever.
+
+---
+
+## Diversity vs Relevance
+
+A ranker that optimizes only immediate click probability often produces repetitive, narrow, or unhealthy feeds.
+
+### Common post-ranking constraints
+
+- **Deduplication:** do not show near-identical items back-to-back
+- **Source diversity:** avoid one creator or seller dominating the page
+- **Freshness:** mix in new items instead of only historical winners
+- **Business constraints:** inventory, sponsored slots, policy, moderation
+
+### Interview framing
+
+Say explicitly: "I would optimize relevance in the model, then enforce diversity/freshness/business rules in a post-ranking layer."
+
+That is usually stronger than trying to force every constraint into a single score.
+
+---
+
+## Ranking System Patterns By Product
+
+| Product | What ranking optimizes | Typical guardrails |
+|---------|------------------------|--------------------|
+| **Home feed / social timeline** | Long-term engagement, session depth, retention | Diversity, freshness, creator fairness, moderation |
+| **Search ranking** | Relevance to query, fast satisfaction | Latency, query intent, freshness |
+| **Ads ranking** | Bid × predicted action value | Budget pacing, fraud, policy |
+| **Marketplace / e-commerce** | Conversion and revenue | Inventory, merchant fairness, sponsored placement |
+| **Video / music recommendations** | Watch time / listening time / retention | Repetition control, creator diversity, safety |
+
+If the interviewer says "ranking," first ask which product surface they mean. Feed ranking, search ranking, and ads ranking are related but not identical.
+
+---
+
 ## Model Serving Infrastructure
 
 | Service | Best For | Key Features |
@@ -266,3 +372,5 @@ I would separate the system into offline training and online serving. Offline, e
 - "Feature store solves training-serving skew. The same feature definitions used in offline training are also served in real-time. Without this, you'd have two codebases that drift apart."
 - "A/B testing is how we validate ML changes. We never ship a new model without running it against the champion model for 2 weeks. Statistical significance AND practical significance both required."
 - "Cold start problem: new users have no history. Fall back to content-based filtering (item attributes) + popularity-based recommendations. After 5 interactions, collaborative filtering kicks in."
+- "Ranking metrics depend on the surface: NDCG for feeds/search, MRR for retrieval-like tasks, and online CTR/retention for the real shipping decision."
+- "I would use multi-stage ranking: retrieval for recall, lightweight ranker for filtering, heavy re-ranker for final precision, then a post-ranking layer for diversity, freshness, and business constraints."

@@ -592,16 +592,19 @@ window.TOPICS = [
     category:   "AI & Machine Learning",
     icon:       "🤖",
     difficulty: "advanced",
-    summary:    "Production ML system design: feature stores, recommendation pipelines, rollout strategy, drift monitoring, rollback, and latency-cost-quality trade-offs.",
+    summary:    "Production ML system design: feature stores, recommendation and ranking pipelines, rollout strategy, drift monitoring, rollback, and latency-cost-quality trade-offs.",
     subtopics:  [
       "The ML System Architecture (5 layers)",
       "Feature Store — The Most Important ML Infrastructure",
       "Recommendation System Architecture",
+      "Ranking Metrics — NDCG, MRR, CTR",
+      "Multi-Stage Ranking Architecture",
+      "Explore vs Exploit; Diversity vs Relevance",
       "Offline vs Online Evaluation",
       "Deployment & Rollout Strategy",
       "Monitoring, Drift & Retraining",
     ],
-    tags:  ["machine learning", "feature store", "model serving", "training", "mlops", "drift", "recommendation", "embeddings"],
+    tags:  ["machine learning", "feature store", "model serving", "training", "mlops", "drift", "recommendation", "ranking", "ndcg", "mrr", "retrieval", "reranking", "embeddings"],
     path:  "../docs/machine-learning/ml-in-system-design.md"
   },
 

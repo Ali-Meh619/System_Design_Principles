@@ -27,7 +27,7 @@
 
 **[🌐 Open Interactive Site](https://ali-meh619.github.io/System_Design_ML_Principles/)** &nbsp;·&nbsp;
 **[📚 Browse All Topics](docs/)** &nbsp;·&nbsp;
-**[🎯 Start Here](docs/fundamentals/interview-framework.md)** &nbsp;·&nbsp;
+**[🎯 Start Here](docs/foundation/interview-framework.md)** &nbsp;·&nbsp;
 **[🤝 Contribute](CONTRIBUTING.md)**
 
 <br>
@@ -62,10 +62,10 @@ Most system design resources are scattered blog posts or 400-page books. This re
 <details>
 <summary><strong>🟠 Foundation (4)</strong></summary>
 
-- 📐 [The System Design Interview Framework](docs/fundamentals/interview-framework.md) — 4-step universal structure: Clarify → Estimate → Design → Deep Dive
-- 🔢 [Numbers Every Engineer Must Know](docs/fundamentals/estimation-and-numbers.md) — Latency hierarchy, scale reference points, back-of-envelope formulas
-- 💾 [IO Fundamentals: Read vs Write](docs/fundamentals/io-fundamentals.md) — Latency hierarchy, random vs sequential access, OS page cache, write amplification
-- 🔌 [Networking & Concurrency](docs/fundamentals/networking-concurrency.md) — TCP vs UDP, HTTP/1.1 vs HTTP/2 vs HTTP/3 (QUIC), event loop, goroutines
+- 📐 [The System Design Interview Framework](docs/foundation/interview-framework.md) — 4-step universal structure: Clarify → Estimate → Design → Deep Dive
+- 🔢 [Numbers Every Engineer Must Know](docs/foundation/estimation-and-numbers.md) — Latency hierarchy, scale reference points, back-of-envelope formulas
+- 💾 [IO Fundamentals: Read vs Write](docs/foundation/io-fundamentals.md) — Latency hierarchy, random vs sequential access, OS page cache, write amplification
+- 🔌 [Networking & Concurrency](docs/foundation/networking-concurrency.md) — TCP vs UDP, HTTP/1.1 vs HTTP/2 vs HTTP/3 (QUIC), event loop, goroutines
 
 </details>
 
@@ -75,7 +75,7 @@ Most system design resources are scattered blog posts or 400-page books. This re
 - 🗄️ [Database Selection Guide](docs/data/databases.md) — SQL vs NoSQL tension, 7 database types with when-to-use decision matrix
 - ⚡ [Caching Deep Dive](docs/data/caching.md) — 5 cache layers, read/write patterns, eviction, cache invalidation strategies
 - 📨 [Message Queues & Event Streaming](docs/data/message-queues.md) — Queue vs Kafka event log, delivery guarantees, DLQ, outbox pattern
-- 🌐 [Storage & CDN](docs/architecture/storage-and-cdn.md) — Object/block/file storage, CDN pull vs push, cache invalidation
+- 🌐 [Storage & CDN](docs/data/storage-and-cdn.md) — Object/block/file storage, CDN pull vs push, cache invalidation
 - 🔩 [Database Internals](docs/data/database-internals.md) — B-tree vs LSM, indexes, replication, CDC, sharding, ACID vs BASE, isolation levels
 
 </details>
@@ -83,10 +83,10 @@ Most system design resources are scattered blog posts or 400-page books. This re
 <details>
 <summary><strong>🔵 API & Networking (4)</strong></summary>
 
-- 🔌 [API Design & API Gateway](docs/architecture/api-design.md) — REST vs gRPC vs GraphQL, gateway responsibilities, rate limiting algorithms
-- ⚖️ [Load Balancing & Networking](docs/architecture/load-balancing.md) — L4 vs L7, round-robin/least-connections/consistent hashing, health checks
-- 🔴 [Real-time Communication](docs/architecture/realtime-communication.md) — Polling, SSE, WebSockets compared; scaling stateful WS servers with Redis pub/sub
-- 🚦 [Rate Limiting In Depth](docs/architecture/rate-limiting.md) — Every algorithm compared, distributed Redis implementation, failure modes
+- 🔌 [API Design & API Gateway](docs/api-networking/api-design.md) — REST vs gRPC vs GraphQL, gateway responsibilities, rate limiting algorithms
+- ⚖️ [Load Balancing & Networking](docs/api-networking/load-balancing.md) — L4 vs L7, round-robin/least-connections/consistent hashing, health checks
+- 🔴 [Real-time Communication](docs/api-networking/realtime-communication.md) — Polling, SSE, WebSockets compared; scaling stateful WS servers with Redis pub/sub
+- 🚦 [Rate Limiting In Depth](docs/api-networking/rate-limiting.md) — Every algorithm compared, distributed Redis implementation, failure modes
 
 </details>
 
@@ -97,7 +97,7 @@ Most system design resources are scattered blog posts or 400-page books. This re
 - 🔄 [Core Design Patterns](docs/distributed/core-design-patterns.md) — Fan-out (social feed), CQRS, event sourcing, outbox pattern, inventory contention
 - 🧱 [Microservices vs Monolith](docs/distributed/microservices-vs-monolith.md) — When to decompose, service discovery, sync vs async communication
 - 🛡️ [Resilience Patterns](docs/distributed/resilience-patterns.md) — Timeouts, retries + jitter, circuit breaker, fallbacks, backpressure, load shedding
-- 🔒 [Distributed Locking](docs/advanced/distributed-locking.md) — Why local locks fail, Redis Redlock, fencing tokens
+- 🔒 [Distributed Locking](docs/distributed/distributed-locking.md) — Why local locks fail, Redis Redlock, fencing tokens
 
 </details>
 
@@ -107,7 +107,7 @@ Most system design resources are scattered blog posts or 400-page books. This re
 - 🔍 [Search & Typeahead Systems](docs/search/search-and-typeahead.md) — Inverted index, prefix trie autocomplete, relevance ranking (TF-IDF, BM25)
 - 📊 [Stream Processing & Top-K Systems](docs/search/stream-processing.md) — Count-Min Sketch, Lambda vs Kappa architecture, Flink, windowing
 - 📍 [Geo & Location Systems](docs/search/geo-systems.md) — Geohash, quadtree, proximity queries, Uber-style driver matching
-- 🎲 [Probabilistic Data Structures](docs/advanced/probabilistic-data-structures.md) — Bloom filter, HyperLogLog, Count-Min Sketch at massive scale
+- 🎲 [Probabilistic Data Structures](docs/search/probabilistic-data-structures.md) — Bloom filter, HyperLogLog, Count-Min Sketch at massive scale
 
 </details>
 
@@ -134,8 +134,8 @@ Most system design resources are scattered blog posts or 400-page books. This re
 <details>
 <summary><strong>🩷 AI & Machine Learning (5)</strong></summary>
 
-- 🤖 [Machine Learning in System Design](docs/advanced/ml-in-system-design.md) — 5-layer ML pipeline, feature store, recommendation systems, model serving
-- 🧠 [AI Agent System Design](docs/advanced/ai-agent-system-design.md) — Planner/tool/memory anatomy, multi-agent patterns, safety, LLM-as-a-Judge
+- 🤖 [Machine Learning in System Design](docs/machine-learning/ml-in-system-design.md) — 5-layer ML pipeline, feature store, recommendation systems, model serving
+- 🧠 [AI Agent System Design](docs/machine-learning/ai-agent-system-design.md) — Planner/tool/memory anatomy, multi-agent patterns, safety, LLM-as-a-Judge
 - 📈 [Classic Machine Learning](docs/machine-learning/classic-ml.md) — Bias-variance, bagging vs boosting, data leakage, XGBoost, SVM, PCA, class imbalance
 - 🔬 [Deep Learning](docs/machine-learning/deep-learning.md) — Weight init, backprop, Adam/AdamW, BatchNorm, CNN (ResNet), LSTM, full Transformer deep-dive
 - 💬 [LLM Interview Questions](docs/machine-learning/llm-interviews.md) — Transformers, RAG, LoRA/QLoRA, RLHF/DPO, decoding strategies, KV cache, CoT, hallucinations
@@ -145,8 +145,8 @@ Most system design resources are scattered blog posts or 400-page books. This re
 <details>
 <summary><strong>🩵 Specialized Systems (2)</strong></summary>
 
-- 📝 [Real-time Collaboration (Google Docs)](docs/advanced/collaboration-editing.md) — OT vs CRDT, operation logs, full Google Docs architecture
-- 🎣 [Webhooks System Design](docs/advanced/webhooks.md) — Signed delivery, exponential retry, idempotency keys, full architecture
+- 📝 [Real-time Collaboration (Google Docs)](docs/specialized/collaboration-editing.md) — OT vs CRDT, operation logs, full Google Docs architecture
+- 🎣 [Webhooks System Design](docs/specialized/webhooks.md) — Signed delivery, exponential retry, idempotency keys, full architecture
 
 </details>
 

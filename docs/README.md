@@ -8,15 +8,15 @@
 
 | Category | Topics | Level | Description |
 |----------|--------|-------|-------------|
-| [📐 Foundation](fundamentals/README.md) | 4 | 🟢–🟡 | Interview structure, estimation, I/O, networking |
+| [📐 Foundation](foundation/README.md) | 4 | 🟢–🟡 | Interview structure, estimation, I/O, networking |
 | [🗄️ Data Storage](data/README.md) | 5 | 🟢–🔴 | Databases, caching, queues, CDN, internals |
-| [🔌 API & Networking](architecture/README.md) | 4 | 🟢–🟡 | REST/gRPC/GraphQL, load balancing, rate limiting, WebSocket |
+| [🔌 API & Networking](api-networking/README.md) | 4 | 🟢–🟡 | REST/gRPC/GraphQL, load balancing, rate limiting, WebSocket |
 | [🌐 Distributed Systems](distributed/README.md) | 5 | 🟡–🔴 | CAP, consistency, patterns, microservices, resilience |
 | [🔍 Search & Analytics](search/README.md) | 4 | 🟡–🔴 | Inverted index, typeahead, stream processing, geo, probabilistic DS |
 | [📈 Scale & Reliability](scale/README.md) | 6 | 🟡–🔴 | Observability, HA, IDs, pagination, notifications, advanced data patterns |
 | [🔐 Security](security/README.md) | 2 | 🟡 | Auth, OAuth 2.0, encryption, GDPR |
-| [🩷 AI & Machine Learning](advanced/README.md) | 5 | 🟡–🔴 | ML systems, AI agents, Classic ML, Deep Learning, LLMs |
-| [🩵 Specialized Systems](advanced/README.md) | 2 | 🟡–🔴 | Real-time collaboration (OT/CRDT), Webhooks |
+| [🩷 AI & Machine Learning](machine-learning/README.md) | 5 | 🟡–🔴 | ML systems, AI agents, Classic ML, Deep Learning, LLMs |
+| [🩵 Specialized Systems](specialized/README.md) | 2 | 🟡–🔴 | Real-time collaboration (OT/CRDT), Webhooks |
 | [📋 Reference](reference/README.md) | 4 | 🟢–🟡 | Cheat sheets, design templates, LeetCode patterns, LLD |
 
 ---
@@ -24,36 +24,36 @@
 ## 📚 All 41 Topics
 
 ### 📐 Foundation
-- [Interview Framework — The Universal 4-Step Approach](fundamentals/interview-framework.md)
-- [Numbers Every Engineer Must Know](fundamentals/estimation-and-numbers.md)
-- [IO Fundamentals: Read vs Write](fundamentals/io-fundamentals.md)
-- [Networking & Concurrency](fundamentals/networking-concurrency.md)
+- [Interview Framework — The Universal 4-Step Approach](foundation/interview-framework.md)
+- [Numbers Every Engineer Must Know](foundation/estimation-and-numbers.md)
+- [IO Fundamentals: Read vs Write](foundation/io-fundamentals.md)
+- [Networking & Concurrency](foundation/networking-concurrency.md)
 
 ### 🗄️ Data Storage
 - [Database Selection Guide](data/databases.md)
 - [Caching Deep Dive](data/caching.md)
 - [Message Queues & Event Streaming](data/message-queues.md)
-- [Storage & CDN](architecture/storage-and-cdn.md)
+- [Storage & CDN](data/storage-and-cdn.md)
 - [Database Internals](data/database-internals.md)
 
 ### 🔌 API & Networking
-- [API Design & API Gateway](architecture/api-design.md)
-- [Load Balancing & Networking](architecture/load-balancing.md)
-- [Rate Limiting In Depth](architecture/rate-limiting.md) ⭐ New
-- [Real-time Communication](architecture/realtime-communication.md)
+- [API Design & API Gateway](api-networking/api-design.md)
+- [Load Balancing & Networking](api-networking/load-balancing.md)
+- [Rate Limiting In Depth](api-networking/rate-limiting.md) ⭐ New
+- [Real-time Communication](api-networking/realtime-communication.md)
 
 ### 🌐 Distributed Systems
 - [Distributed System Fundamentals](distributed/distributed-fundamentals.md)
 - [Core Design Patterns (Fan-out, CQRS, Outbox)](distributed/core-design-patterns.md)
 - [Microservices vs Monolith](distributed/microservices-vs-monolith.md)
 - [Resilience Patterns](distributed/resilience-patterns.md)
-- [Distributed Locking](advanced/distributed-locking.md)
+- [Distributed Locking](distributed/distributed-locking.md)
 
 ### 🔍 Search & Analytics
 - [Search & Typeahead Systems](search/search-and-typeahead.md)
 - [Stream Processing & Top-K Systems](search/stream-processing.md)
 - [Geo & Location Systems](search/geo-systems.md)
-- [Probabilistic Data Structures](advanced/probabilistic-data-structures.md)
+- [Probabilistic Data Structures](search/probabilistic-data-structures.md)
 
 ### 📈 Scale & Reliability
 - [Observability & Monitoring](scale/observability.md)
@@ -68,15 +68,15 @@
 - [Privacy & Data Compliance](security/privacy-and-compliance.md)
 
 ### 🩷 AI & Machine Learning
-- [Machine Learning in System Design](advanced/ml-in-system-design.md)
-- [AI Agent System Design](advanced/ai-agent-system-design.md)
+- [Machine Learning in System Design](machine-learning/ml-in-system-design.md)
+- [AI Agent System Design](machine-learning/ai-agent-system-design.md)
 - [Classic Machine Learning](machine-learning/classic-ml.md)
 - [Deep Learning](machine-learning/deep-learning.md)
 - [LLM Interview Questions](machine-learning/llm-interviews.md)
 
 ### 🩵 Specialized Systems
-- [Real-time Collaboration (Google Docs)](advanced/collaboration-editing.md)
-- [Webhooks System Design](advanced/webhooks.md)
+- [Real-time Collaboration (Google Docs)](specialized/collaboration-editing.md)
+- [Webhooks System Design](specialized/webhooks.md)
 
 ### 📋 Reference
 - [Common Scenarios & Cheat Sheets](reference/scenario-cheat-sheet.md)

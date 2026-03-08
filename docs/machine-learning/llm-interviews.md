@@ -237,15 +237,87 @@ User query
 | **ReAct** | Interleave Reasoning + Acting (tool calls) | Agents, multi-step tasks |
 | **System prompt** | Set persona, constraints, output format | All production use cases |
 
-### Chain-of-Thought Intuition
+### Chain-of-Thought (CoT) — Why It Works
 
-CoT works because it forces the model to allocate more compute (more tokens) to reasoning before producing the answer. It essentially turns a single forward pass into a search-and-verify process.
+CoT forces the model to **externalise intermediate reasoning steps as tokens**, making each step available as context for the next. The answer only comes after the reasoning is written out.
 
 ```
-Bad:  "What is 123 × 456?"  → "56088" (may hallucinate)
-Good: "What is 123 × 456? Think step by step."
-      → "123 × 400 = 49200, 123 × 56 = 6888, total = 56088" ✓
+Without CoT:
+  Q: "If a train travels 60 mph for 2.5 hours, how far does it go?"
+  A: "120 miles"  ← model jumps directly; no error-checking possible
+
+With CoT:
+  Q: "...Think step by step."
+  A: "Distance = speed × time. Speed = 60 mph, time = 2.5 hours.
+      60 × 2.5 = 60 × 2 + 60 × 0.5 = 120 + 30 = 150 miles."  ✓
 ```
+
+**Why it fundamentally helps — three mechanisms:**
+
+1. **More computation per answer.** A Transformer has a fixed depth; each forward pass has a fixed number of operations. Generating reasoning tokens effectively increases compute dedicated to the problem before the final answer token is sampled. Difficult reasoning that can't fit in one pass gets more "scratch space."
+
+2. **Error localisation.** Each intermediate step can be checked — by the model itself (self-consistency), by another model (LLM-as-judge), or by a tool (code executor). Without CoT, errors are invisible inside the black-box final answer.
+
+3. **Conditioning effect.** Each reasoning token becomes part of the context for subsequent tokens. Writing "so the units cancel to give kg·m/s²" constrains the next token to be dimensionally consistent. The model is less likely to produce an answer that contradicts its own written reasoning.
+
+**Variants:**
+
+| Variant | How | When to use |
+|---------|-----|-------------|
+| **Zero-shot CoT** | Append "Let's think step by step" | Quick baseline; works on most reasoning tasks |
+| **Few-shot CoT** | Provide full (Q → reasoning → A) examples | More reliable; guides format of reasoning |
+| **Self-consistency** | Sample k CoT paths; majority vote on final answers | High-stakes; sacrifices latency for accuracy |
+| **Auto-CoT** | LLM generates its own demonstrations automatically | Avoids manual example writing |
+| **Tree of Thoughts (ToT)** | Explore multiple reasoning branches; backtrack | Complex planning tasks |
+| **Program-of-Thought** | Reason in code; execute for deterministic answer | Math, data analysis |
+
+### When CoT Fails
+
+CoT is not reliable for all problem types. Understanding the failure modes is as important as knowing when to use it.
+
+**1. Plausible-sounding but wrong reasoning ("hallucinated CoT")**
+The model generates a fluent, step-by-step rationale that reaches an incorrect answer — and because the reasoning *sounds* coherent, it's harder to catch than a naked wrong answer.
+
+```
+Q: "What is the capital of Australia?"
+CoT: "Australia is a large country. Its largest and most famous city is Sydney.
+      Sydney is the cultural and financial hub. Therefore, the capital is Sydney."
+A: "Sydney"   ← Wrong. The capital is Canberra.
+```
+The model generates reasoning that *justifies* its incorrect parametric memory rather than correcting it.
+
+**2. Faithfulness gap**
+Research shows the written CoT often does not accurately reflect the model's internal computation — the model may have already "decided" the answer and writes reasoning that post-hoc rationalises it. The reasoning is a *description*, not a *cause*, of the final token.
+
+**3. Reasoning steps cascade errors**
+If an early step is wrong, every subsequent step conditions on it and the error compounds:
+```
+Step 1: "There are 24 hours in a day"  ✓
+Step 2: "3 days = 24 × 3 = 72 hours"  ✓
+Step 3: "Each hour has 100 minutes"    ✗ ← wrong
+Step 4: "72 hours = 7200 minutes"      ✗ ← compounds
+```
+
+**4. Tasks where CoT doesn't help (or hurts)**
+- **Simple factual recall:** "What year was the Eiffel Tower built?" — CoT adds noise, not signal
+- **Very long CoT chains:** Errors accumulate; the model can "talk itself into" a wrong answer
+- **Tasks requiring symbolic precision:** CoT reasoning is still probabilistic; arithmetic over large numbers remains unreliable without a code executor
+- **Classification with no intermediate reasoning:** Sentiment, named entity recognition — CoT overhead not worth it
+
+**5. Sycophantic CoT**
+If the user signals a preferred answer in the prompt, the model may generate reasoning that leads to that answer regardless of correctness:
+```
+User: "Obviously 2+2=5, right? Think step by step."
+CoT: "Well, if we consider non-standard arithmetic... 5"  ← wrong
+```
+
+**Mitigations for CoT failures:**
+- **Self-consistency:** Sample 10+ paths; majority vote filters out noise from bad reasoning chains
+- **Verify with tools:** Execute arithmetic in code, not in CoT text
+- **Step-level verification:** Use another LLM call to check each reasoning step
+- **Constitutional prompting:** Instruct the model: "Check your reasoning before giving a final answer"
+
+---
 
 ### Structured Output / JSON Mode
 
@@ -580,9 +652,64 @@ Sequence B (10 tokens): [page 3: tok 1-10, 6 slots free]
 | Gemini 1.5 Pro | 1M tokens |
 
 **Challenges with long context:**
-- **Lost in the middle:** Models attend to beginning and end of context best; middle is often ignored
-- **Attention complexity:** O(n²) makes very long sequences expensive
-- **KV cache size:** Grows linearly with sequence length
+
+### Lost in the Middle
+
+Empirically, LLM accuracy on retrieval tasks degrades significantly when the relevant information is placed in the **middle of a long context**, even when the model technically "fits" the full context.
+
+```
+Context: [Doc 1] [Doc 2] ... [Doc 10 ← relevant] ... [Doc 20]
+                                ↑
+                        Model often misses this
+
+Performance by position of relevant document:
+  Position 1  (beginning): ~85% accuracy
+  Position 10 (middle):    ~55% accuracy  ← sharp drop
+  Position 20 (end):       ~80% accuracy
+```
+
+**Why this happens:**
+
+1. **Attention score distribution:** Transformers have a natural tendency to assign higher attention weights to tokens near the query position and to the beginning of the sequence (recency and primacy effects). Middle tokens compete with many others for attention.
+
+2. **Training data bias:** Most documents in pre-training have the key information early (headlines, abstracts, introductions). The model has learned a prior that important content comes first or last.
+
+3. **Positional encoding saturation:** At very long distances, positional embeddings may become less discriminative, making relative importance of middle tokens harder to judge.
+
+**Practical mitigations:**
+- Place the most important context at the **start or end** of the prompt, not the middle
+- Use **re-ranking** in RAG to put the highest-relevance chunks at the extremes
+- Reduce context size: retrieve fewer, more precise chunks rather than many mediocre ones
+- Use models specifically trained for long-context (Gemini 1.5, Claude 3) — they show less degradation
+
+### Attention Dilution
+
+As context length grows, each token's attention is distributed across more tokens — the attention weight any single important token receives shrinks.
+
+```
+Attention weight ≈ softmax(QKᵀ / √d)
+
+With 100 tokens:   each token gets ~0.01 average attention weight
+With 10,000 tokens: each token gets ~0.0001 average attention weight
+                        ↑ 100× more diluted
+```
+
+Even if the model attends to the right token with *relatively* high weight, the absolute value is so small that the gradient signal weakens and the model may fail to fully utilise that token's value.
+
+**Why it interacts with the "lost in the middle" problem:**
+Softmax normalises over the full sequence. As context grows, the denominator `Σ exp(score)` grows, further suppressing individual attention weights. A token in the middle must "compete louder" against an increasingly large crowd.
+
+**Implications for system design:**
+| Scenario | Impact | Mitigation |
+|---------|--------|-----------|
+| Long RAG context | Middle chunks ignored | Rerank; put best chunks first/last |
+| Long conversation history | Early turns diluted | Summarise old turns; sliding window memory |
+| System prompt + long user message | System prompt diluted | Repeat key instructions at the end |
+| Multi-document QA | Cross-document signals diluted | Chunk-level retrieval; targeted extraction |
+
+**Attention complexity:** O(n²) makes very long sequences expensive
+
+**KV cache size:** Grows linearly with sequence length
 
 **Solutions:**
 - **FlashAttention:** Tiled computation that avoids materializing the full attention matrix; 2-4× speedup, same output
@@ -643,6 +770,12 @@ Dense vector representations capturing semantic meaning. Similar texts have high
 ---
 
 ## Interview Quick-Reference
+
+**"Why does Chain-of-Thought help, and when does it fail?"**
+→ CoT works by externalising reasoning as tokens — each step becomes context for the next, allocating more effective compute to the problem. Three mechanisms: more computation per answer, error localisation, and conditioning effect. It fails when: (1) the model generates plausible-sounding but wrong reasoning ("hallucinated CoT"), (2) the reasoning is a post-hoc rationalisation of a wrong pre-decided answer (faithfulness gap), (3) errors cascade through dependent steps, or (4) the task has no useful intermediate steps (simple recall, classification). Mitigation: self-consistency sampling + tool-based verification of arithmetic steps.
+
+**"Explain lost in the middle and attention dilution"**
+→ Lost in the middle: accuracy on retrieval tasks drops sharply when relevant content is in the middle of a long context (~55% vs ~85% at extremes). Caused by attention primacy/recency bias and training data priors. Fix: put important context at start/end of prompt; re-rank RAG chunks to extremes. Attention dilution: as context length grows, softmax normalises over more tokens — each token's attention weight shrinks proportionally. Middle tokens must "compete louder" in an increasingly crowded sequence. Design implication: in RAG, fewer precise chunks beat many mediocre ones.
 
 **"Explain the Transformer architecture"**
 → Token embeddings + positional encoding → N layers each: LayerNorm + Multi-Head Self-Attention (Q·Kᵀ/√d scaled softmax weighted sum of V) + residual, LayerNorm + FFN + residual → linear layer + softmax over vocab.

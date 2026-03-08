@@ -146,7 +146,7 @@ Use the interactive site when you want navigation, quiz mode, and progress track
 <details>
 <summary><strong>🩷 AI & Machine Learning (5)</strong></summary>
 
-- 🤖 [Machine Learning in System Design](docs/machine-learning/ml-in-system-design.md) — feature store, recommendation systems, rollout strategy, drift, serving latency, rollback
+- 🤖 [Machine Learning in System Design](docs/machine-learning/ml-in-system-design.md) — feature store, recommendation and ranking systems, rollout strategy, drift, serving latency, rollback
 - 🧠 [AI Agent System Design](docs/machine-learning/ai-agent-system-design.md) — planner/reactor loops, retrieval, tool reliability, memory, budgets, safety
 - 📈 [Classic Machine Learning](docs/machine-learning/classic-ml.md) — Bias-variance, bagging vs boosting, data leakage, XGBoost, SVM, PCA, class imbalance
 - 🔬 [Deep Learning](docs/machine-learning/deep-learning.md) — Weight init, backprop, Adam/AdamW, BatchNorm, CNN (ResNet), LSTM, full Transformer deep-dive

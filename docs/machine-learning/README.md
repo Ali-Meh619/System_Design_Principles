@@ -8,9 +8,11 @@
 
 | # | Topic | Difficulty | What You'll Learn |
 |---|-------|-----------|------------------|
-| 1 | [Classic Machine Learning](classic-ml.md) | 🟡 Intermediate | Bias-variance, bagging vs boosting, data leakage, XGBoost, SVM, PCA, class imbalance, missing values, high-dimensional features |
-| 2 | [Deep Learning](deep-learning.md) | 🟡 Intermediate | Weight init (Xavier/He), backprop, Adam/AdamW, BatchNorm, ResNet, LSTMs, full Transformer deep-dive, FlashAttention, ViT |
-| 3 | [LLM Interview Questions](llm-interviews.md) | 🔴 Advanced | Transformer architecture, RAG, LoRA/QLoRA, RLHF/DPO, decoding strategies, KV cache, CoT failure modes, hallucination mitigation |
+| 1 | [Machine Learning in System Design](ml-in-system-design.md) | 🔴 Advanced | ML system architecture, feature store, model serving |
+| 2 | [AI Agent System Design](ai-agent-system-design.md) | 🔴 Advanced | Agent anatomy, cognitive architectures, multi-agent patterns |
+| 3 | [Classic Machine Learning](classic-ml.md) | 🟡 Intermediate | Bias-variance, bagging vs boosting, data leakage, XGBoost, SVM, PCA |
+| 4 | [Deep Learning](deep-learning.md) | 🟡 Intermediate | Weight init, backprop, Adam, BatchNorm, CNNs, LSTMs, Transformers |
+| 5 | [LLM Interview Questions](llm-interviews.md) | 🔴 Advanced | Transformer architecture, RAG, LoRA, RLHF/DPO, decoding, KV cache, CoT |
 
 *(These sections are fully completed with interview-ready content.)*
 
@@ -22,16 +24,23 @@
 New to ML interviews:
   Classic ML → Deep Learning → LLM Interview Questions
 
-Strong ML background, weak on LLMs:
-  LLM Interview Questions → Deep Learning (Transformer section)
-
-Strong on LLMs, weak on classical:
-  Classic ML (bias-variance, data leakage, ensembles)
+System Design focus:
+  Machine Learning in System Design → AI Agent System Design
 ```
 
 ---
 
 ## Common Interview Questions by Topic
+
+### ML in System Design
+- "Design a recommendation system for Netflix."
+- "Design a fraud detection system for Stripe."
+- "What is the role of a Feature Store? Why do we need it?"
+
+### AI Agent Design
+- "Design an autonomous coding assistant."
+- "How does the ReAct pattern work?"
+- "What are the core components of an AI agent's memory?"
 
 ### Classic ML
 - "Your model has 99% train accuracy and 70% test accuracy. What do you do?"
@@ -61,6 +70,8 @@ Strong on LLMs, weak on classical:
 
 | Concept | One-line answer |
 |---------|----------------|
+| **Feature Store** | Prevents training-serving skew by providing the exact same features to both |
+| **ReAct Agent** | Pattern where agent iterates through Reason → Act → Observe |
 | **Bias vs Variance** | Bias = model too simple; Variance = model too sensitive to training data |
 | **L1 vs L2** | L1 → sparsity (zeroes weights); L2 → shrinks weights evenly |
 | **Bagging vs Boosting** | Bagging reduces variance (parallel); Boosting reduces bias (sequential) |

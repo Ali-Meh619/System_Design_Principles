@@ -22,7 +22,7 @@ Every large-scale system is a distributed system. Every design decision in a dis
 | 2 | [Core Design Patterns](core-design-patterns.md) | 🟡 Mid | Fan-out, CQRS, event sourcing, outbox pattern |
 | 3 | [Microservices vs Monolith](microservices-vs-monolith.md) | 🟡 Mid | When to split, service discovery, sync vs async communication |
 | 4 | [Resilience Patterns](resilience-patterns.md) | 🟡 Mid | Timeouts, retries, circuit breaker, backpressure |
-| 5 | [Distributed Locking](../advanced/distributed-locking.md) | 🔴 Advanced | Redis Redlock, fencing tokens |
+| 5 | [Distributed Locking](../distributed/distributed-locking.md) | 🔴 Advanced | Redis Redlock, fencing tokens |
 
 ---
 

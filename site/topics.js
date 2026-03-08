@@ -21,7 +21,7 @@ window.TOPICS = [
       "Step 4 — Deep Dive & Trade-offs (15 min)",
     ],
     tags:  ["clarify", "estimate", "propose", "deep dive", "framework", "requirements", "trade-offs"],
-    path:  "../docs/fundamentals/interview-framework.md"
+    path:  "../docs/foundation/interview-framework.md"
   },
 
   {
@@ -37,7 +37,7 @@ window.TOPICS = [
       "Quick Estimation Formula",
     ],
     tags:  ["latency", "qps", "throughput", "bandwidth", "back-of-envelope", "numbers", "estimation"],
-    path:  "../docs/fundamentals/estimation-and-numbers.md"
+    path:  "../docs/foundation/estimation-and-numbers.md"
   },
 
   {
@@ -54,7 +54,7 @@ window.TOPICS = [
       "Write Amplification",
     ],
     tags:  ["io", "latency", "ram", "ssd", "hdd", "page cache", "b-tree", "lsm", "write amplification"],
-    path:  "../docs/fundamentals/io-fundamentals.md"
+    path:  "../docs/foundation/io-fundamentals.md"
   },
 
   {
@@ -70,7 +70,7 @@ window.TOPICS = [
       "Concurrency Models (Thread-per-request, Event Loop, Goroutines)",
     ],
     tags:  ["tcp", "udp", "http2", "http3", "quic", "async", "blocking", "event loop", "goroutines"],
-    path:  "../docs/fundamentals/networking-concurrency.md"
+    path:  "../docs/foundation/networking-concurrency.md"
   },
 
   /* ── DATA STORAGE ────────────────────────────────────────────── */
@@ -147,7 +147,7 @@ window.TOPICS = [
       "Cache Invalidation & Versioned URLs",
     ],
     tags:  ["s3", "object storage", "cdn", "cloudfront", "cloudflare", "block storage", "ebs", "presigned url"],
-    path:  "../docs/architecture/storage-and-cdn.md"
+    path:  "../docs/data/storage-and-cdn.md"
   },
 
   {
@@ -185,7 +185,7 @@ window.TOPICS = [
       "Rate Limiting Algorithms (Token Bucket, Leaky Bucket, Sliding Window)",
     ],
     tags:  ["rest", "grpc", "graphql", "api gateway", "rate limiting", "token bucket", "openapi", "protobuf"],
-    path:  "../docs/architecture/api-design.md"
+    path:  "../docs/api-networking/api-design.md"
   },
 
   {
@@ -202,7 +202,7 @@ window.TOPICS = [
       "Connection Draining (Graceful Shutdown)",
     ],
     tags:  ["load balancer", "round robin", "least connections", "consistent hashing", "health check", "l4", "l7", "nginx", "alb"],
-    path:  "../docs/architecture/load-balancing.md"
+    path:  "../docs/api-networking/load-balancing.md"
   },
 
   {
@@ -217,7 +217,7 @@ window.TOPICS = [
       "Scaling WebSocket Servers (Redis Pub/Sub)",
     ],
     tags:  ["websocket", "sse", "long polling", "pubsub", "fanout", "presence", "chat", "redis pub/sub"],
-    path:  "../docs/architecture/realtime-communication.md"
+    path:  "../docs/api-networking/realtime-communication.md"
   },
 
   /* ── DISTRIBUTED SYSTEMS ─────────────────────────────────────── */
@@ -317,7 +317,7 @@ window.TOPICS = [
       "Fencing Tokens — The Safety Net",
     ],
     tags:  ["distributed lock", "redlock", "lease", "fencing token", "mutual exclusion", "zookeeper", "redis"],
-    path:  "../docs/advanced/distributed-locking.md"
+    path:  "../docs/distributed/distributed-locking.md"
   },
 
   {
@@ -336,7 +336,7 @@ window.TOPICS = [
       "Rate Limiter Response Headers & Failure Modes",
     ],
     tags:  ["rate limiting", "token bucket", "leaky bucket", "sliding window", "redis", "lua", "429", "throttle", "api gateway", "cloudflare"],
-    path:  "../docs/architecture/rate-limiting.md"
+    path:  "../docs/api-networking/rate-limiting.md"
   },
 
   /* ── SEARCH & ANALYTICS ──────────────────────────────────────── */
@@ -405,7 +405,7 @@ window.TOPICS = [
       "Count-Min Sketch — Frequency Counting",
     ],
     tags:  ["bloom filter", "hyperloglog", "count-min sketch", "approximate", "probabilistic", "cardinality", "false positive"],
-    path:  "../docs/advanced/probabilistic-data-structures.md"
+    path:  "../docs/search/probabilistic-data-structures.md"
   },
 
   /* ── SCALE & RELIABILITY ─────────────────────────────────────── */
@@ -565,7 +565,7 @@ window.TOPICS = [
       "Model Serving Infrastructure (online, batch, fallback)",
     ],
     tags:  ["machine learning", "feature store", "model serving", "training", "mlops", "drift", "recommendation", "embeddings"],
-    path:  "../docs/advanced/ml-in-system-design.md"
+    path:  "../docs/machine-learning/ml-in-system-design.md"
   },
 
   {
@@ -583,7 +583,7 @@ window.TOPICS = [
       "Evaluation (LLM-as-a-Judge)",
     ],
     tags:  ["llm", "agent", "rag", "tool use", "memory", "guardrails", "orchestrator", "multi-agent", "react", "chain-of-thought"],
-    path:  "../docs/advanced/ai-agent-system-design.md"
+    path:  "../docs/machine-learning/ai-agent-system-design.md"
   },
 
   /* ── SPECIALIZED SYSTEMS ─────────────────────────────────────── */
@@ -602,7 +602,7 @@ window.TOPICS = [
       "Google Docs System Architecture",
     ],
     tags:  ["ot", "crdt", "operational transform", "conflict", "offline", "sync", "google docs", "presence", "version vector"],
-    path:  "../docs/advanced/collaboration-editing.md"
+    path:  "../docs/specialized/collaboration-editing.md"
   },
 
   {
@@ -617,7 +617,7 @@ window.TOPICS = [
       "Webhook Architecture (queue-backed, signed, retried)",
     ],
     tags:  ["webhook", "signed payload", "hmac", "retry", "idempotent", "delivery", "event", "at-least-once"],
-    path:  "../docs/advanced/webhooks.md"
+    path:  "../docs/specialized/webhooks.md"
   },
 
   /* ── AI & MACHINE LEARNING ──────────────────────────────────── */

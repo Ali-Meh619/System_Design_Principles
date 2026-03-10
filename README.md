@@ -4,7 +4,7 @@
 
 # ⚡ System Design & Machine Learning Playbook
 
-### An interactive reference guide for engineers preparing for System Design and ML interviews.
+### An interactive reference guide for engineers preparing for System Design, Cloud, and ML interviews.
 
 <br>
 
@@ -20,7 +20,7 @@
 [![Forks](https://img.shields.io/github/forks/Ali-Meh619/System_Design_ML_Principles?style=for-the-badge&color=0d9488&logo=github)](https://github.com/Ali-Meh619/System_Design_ML_Principles/network/members)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=for-the-badge)](CONTRIBUTING.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
-[![Topics](https://img.shields.io/badge/Topics-43-purple?style=for-the-badge)](docs/)
+[![Topics](https://img.shields.io/badge/Topics-48-purple?style=for-the-badge)](docs/)
 [![Interactive](https://img.shields.io/badge/Site-Live-success?style=for-the-badge&logo=github)](https://ali-meh619.github.io/System_Design_ML_Principles/)
 
 <br>
@@ -42,7 +42,7 @@ Most interview resources are either too scattered or too theoretical. This repo 
 
 | Track | Best for | Start here |
 |-------|----------|------------|
-| **Core System Design** | Distributed systems, APIs, storage, scaling | [docs/](docs/) |
+| **Core System Design** | Distributed systems, cloud/platform, APIs, storage, scaling | [docs/](docs/) |
 | **AI & Machine Learning** | ML system design, agents, classic ML, deep learning, LLMs | [docs/machine-learning/README.md](docs/machine-learning/README.md) |
 | **Reference & Practice Appendix** | Templates, cheat sheets, LeetCode patterns, LLD | [docs/reference/README.md](docs/reference/README.md) |
 
@@ -52,11 +52,11 @@ Use the interactive site when you want navigation, quiz mode, and progress track
 
 | Feature | Description |
 |---------|-------------|
-| 🎯 **43 interview-ready topics** | Core system design, AI/ML, security, and interview reference material |
+| 🎯 **48 interview-ready topics** | Core system design, cloud/platform, AI/ML, security, and interview reference material |
 | 🌙 **Dark / Light mode** | Persisted preference, instant toggle with `d` |
 | ✅ **Progress tracking** | Mark topics as read. Your progress saves locally. |
 | 🔖 **Bookmarks** | Save topics to revisit. Accessible from any page. |
-| 🃏 **Quiz / Flashcard mode** | Randomized flashcard review across all 43 topics |
+| 🃏 **Quiz / Flashcard mode** | Randomized flashcard review across all 48 topics |
 | 📖 **Inline reader** | Read every topic without leaving the page — with prev/next navigation |
 | ⌨️ **Keyboard-first** | `/` search, `q` quiz, `b` bookmarks, `?` shortcuts |
 | 📊 **Visual progress bar** | See your overall completion at a glance |
@@ -67,7 +67,7 @@ Use the interactive site when you want navigation, quiz mode, and progress track
 
 ---
 
-## 🗂️ Topic Coverage (43 Topics)
+## 🗂️ Topic Coverage (48 Topics)
 
 <details>
 <summary><strong>🟠 Foundation (4)</strong></summary>
@@ -97,6 +97,17 @@ Use the interactive site when you want navigation, quiz mode, and progress track
 - ⚖️ [Load Balancing & Networking](docs/api-networking/load-balancing.md) — L4 vs L7, round-robin/least-connections/consistent hashing, health checks
 - 🔴 [Real-time Communication](docs/api-networking/realtime-communication.md) — Polling, SSE, WebSockets compared; scaling stateful WS servers with Redis pub/sub
 - 🚦 [Rate Limiting In Depth](docs/api-networking/rate-limiting.md) — Every algorithm compared, distributed Redis implementation, failure modes
+
+</details>
+
+<details>
+<summary><strong>☁️ Cloud & Platform (5)</strong></summary>
+
+- ☁️ [Cloud Fundamentals & Shared Responsibility](docs/cloud-platform/cloud-fundamentals.md) — Regions, availability zones, managed services, shared responsibility, environment boundaries
+- 🖥️ [Compute & Deployment Patterns](docs/cloud-platform/compute-deployment-patterns.md) — VMs vs containers vs Kubernetes vs serverless, autoscaling, canary/blue-green rollout
+- 🌍 [Cloud Networking & Traffic Management](docs/cloud-platform/cloud-networking-traffic-management.md) — VPCs, subnets, DNS, CDN/WAF, API gateways, service-to-service traffic
+- 🪪 [IAM, Secrets & Governance](docs/cloud-platform/iam-secrets-governance.md) — Least privilege, workload identity, secret rotation, KMS, audit and guardrails
+- 📉 [Reliability, Observability & Cost](docs/cloud-platform/reliability-observability-cost.md) — Multi-AZ vs multi-region, RTO/RPO, SLOs, budget alarms, cost-aware scaling
 
 </details>
 
@@ -184,16 +195,16 @@ Pick a path based on your experience level, then use the **[interactive site](ht
 Interview Framework → Numbers to Know → Database Selection → Caching Deep Dive → API Design & Gateway → Rate Limiting
 ```
 
-### 🚀 Mid-Level — Master distributed systems (7 topics)
+### 🚀 Mid-Level — Master distributed systems and platform basics (9 topics)
 
 ```
-Distributed Fundamentals → Resilience Patterns → Observability → High Availability → Microservices → Notifications → Authorization / MFA
+Distributed Fundamentals → Cloud Fundamentals → Compute & Deployment → Resilience Patterns → Observability → High Availability → Microservices → Notifications → Authorization / MFA
 ```
 
-### 🏆 Advanced — Push beyond the standard interview (7 topics)
+### 🏆 Advanced — Push beyond the standard interview (8 topics)
 
 ```
-AI Agent System Design → ML System Design → Secrets / Threat Modeling → Real-time Collaboration → Probabilistic DS → Stream Processing → DB Internals
+AI Agent System Design → ML System Design → Cloud Networking → IAM / Governance → Reliability, Observability & Cost → Real-time Collaboration → Probabilistic DS → DB Internals
 ```
 
 ---
@@ -249,9 +260,10 @@ System_Design_ML_Principles/
 │   ├── styles.css              # Full design system with dark/light mode
 │   ├── app.js                  # All interactive features
 │   └── topics.js               # Topic registry with icons, difficulty, tags, paths
-├── docs/                       # 43 topic documents
+├── docs/                       # 48 topic documents
 │   ├── foundation/             # Interview framework, estimation, I/O, networking
 │   ├── api-networking/         # APIs, load balancing, rate limiting, realtime
+│   ├── cloud-platform/         # Cloud foundations, deployment, networking, IAM, reliability
 │   ├── data/                   # Databases, caching, queues, internals
 │   ├── distributed/            # CAP, consistency, microservices, resilience, patterns
 │   ├── search/                 # Full-text search, typeahead, geo, stream processing

@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════
    System Design & ML Playbook — Topics
-   43 sections across 10 categories
+   48 sections across 11 categories
    ═══════════════════════════════════════════════════════════════ */
 window.TOPICS = [
 
@@ -220,6 +220,112 @@ window.TOPICS = [
     path:  "../docs/api-networking/realtime-communication.md"
   },
 
+  {
+    id:         "ratelimiting",
+    title:      "Rate Limiting In Depth",
+    category:   "API & Networking",
+    icon:       "🚦",
+    difficulty: "mid",
+    summary:    "Every algorithm compared (Token Bucket, Leaky Bucket, Sliding Window), distributed rate limiting with Redis, and designing a standalone rate limiter service.",
+    subtopics:  [
+      "Token Bucket — Burst-Friendly Rate Limiting",
+      "Leaky Bucket — Smooth Output Rate",
+      "Fixed Window Counter (and why it's broken)",
+      "Sliding Window Counter — Best of Both Worlds",
+      "Distributed Rate Limiting Architecture",
+      "Rate Limiter Response Headers & Failure Modes",
+    ],
+    tags:  ["rate limiting", "token bucket", "leaky bucket", "sliding window", "redis", "lua", "429", "throttle", "api gateway", "cloudflare"],
+    path:  "../docs/api-networking/rate-limiting.md"
+  },
+
+  /* ── CLOUD & PLATFORM ─────────────────────────────────────────── */
+
+  {
+    id:         "cloudfundamentals",
+    title:      "Cloud Fundamentals & Shared Responsibility",
+    category:   "Cloud & Platform",
+    icon:       "☁️",
+    difficulty: "beginner",
+    summary:    "Regions, availability zones, managed services, shared responsibility, and the default cloud boundaries that make designs sound real.",
+    subtopics:  [
+      "Regions, Availability Zones, and Failure Domains",
+      "Shared Responsibility Model",
+      "Managed Services vs Self-Managed Systems",
+      "Environment and Account Boundaries",
+    ],
+    tags:  ["cloud", "aws", "gcp", "azure", "multi-az", "shared responsibility", "managed services", "region", "availability zone"],
+    path:  "../docs/cloud-platform/cloud-fundamentals.md"
+  },
+
+  {
+    id:         "computedeployment",
+    title:      "Compute & Deployment Patterns",
+    category:   "Cloud & Platform",
+    icon:       "🖥️",
+    difficulty: "mid",
+    summary:    "VMs vs containers vs Kubernetes vs serverless, stateless services, autoscaling signals, and rollout patterns like rolling, canary, and blue-green.",
+    subtopics:  [
+      "Choosing Between VMs, Containers, Kubernetes, and Serverless",
+      "Stateless Service Design",
+      "Autoscaling Signals",
+      "Rolling, Canary, Blue-Green, and Shadow Deployments",
+    ],
+    tags:  ["containers", "kubernetes", "k8s", "serverless", "vm", "autoscaling", "canary", "blue-green", "deployment"],
+    path:  "../docs/cloud-platform/compute-deployment-patterns.md"
+  },
+
+  {
+    id:         "cloudnetworking",
+    title:      "Cloud Networking & Traffic Management",
+    category:   "Cloud & Platform",
+    icon:       "🌍",
+    difficulty: "mid",
+    summary:    "VPCs, subnets, DNS, CDN/WAF, API gateways, internal service communication, and traffic shaping patterns that keep boundaries clean.",
+    subtopics:  [
+      "VPCs, Public Subnets, and Private Subnets",
+      "North-South vs East-West Traffic",
+      "DNS, CDN, WAF, Load Balancer, and API Gateway",
+      "Service Discovery and Internal Routing",
+    ],
+    tags:  ["vpc", "subnet", "dns", "cdn", "waf", "nat", "api gateway", "service discovery", "networking"],
+    path:  "../docs/cloud-platform/cloud-networking-traffic-management.md"
+  },
+
+  {
+    id:         "iamgovernance",
+    title:      "IAM, Secrets & Governance",
+    category:   "Cloud & Platform",
+    icon:       "🪪",
+    difficulty: "mid",
+    summary:    "Least privilege, human vs workload identity, secret storage, KMS-backed encryption, and governance controls that reduce blast radius.",
+    subtopics:  [
+      "Principals, Roles, and Policies",
+      "Human Identity vs Workload Identity",
+      "Secrets and Key Management",
+      "Guardrails, Audit, and Governance",
+    ],
+    tags:  ["iam", "least privilege", "rbac", "roles", "secrets", "kms", "audit", "governance", "workload identity"],
+    path:  "../docs/cloud-platform/iam-secrets-governance.md"
+  },
+
+  {
+    id:         "cloudreliability",
+    title:      "Reliability, Observability & Cost",
+    category:   "Cloud & Platform",
+    icon:       "📉",
+    difficulty: "advanced",
+    summary:    "Multi-AZ vs multi-region, RTO/RPO, SLO-driven operations, restore testing, budget alarms, and cost-aware platform decisions.",
+    subtopics:  [
+      "Failure Scope and High Availability",
+      "RTO, RPO, and Disaster Recovery",
+      "Metrics, Logs, Traces, and SLOs",
+      "Right-Sizing, Egress, and Budget Guardrails",
+    ],
+    tags:  ["multi-region", "multi-az", "rto", "rpo", "slo", "observability", "budget", "egress", "cost optimization"],
+    path:  "../docs/cloud-platform/reliability-observability-cost.md"
+  },
+
   /* ── DISTRIBUTED SYSTEMS ─────────────────────────────────────── */
 
   {
@@ -318,25 +424,6 @@ window.TOPICS = [
     ],
     tags:  ["distributed lock", "redlock", "lease", "fencing token", "mutual exclusion", "zookeeper", "redis"],
     path:  "../docs/distributed/distributed-locking.md"
-  },
-
-  {
-    id:         "ratelimiting",
-    title:      "Rate Limiting In Depth",
-    category:   "API & Networking",
-    icon:       "🚦",
-    difficulty: "mid",
-    summary:    "Every algorithm compared (Token Bucket, Leaky Bucket, Sliding Window), distributed rate limiting with Redis, and designing a standalone rate limiter service.",
-    subtopics:  [
-      "Token Bucket — Burst-Friendly Rate Limiting",
-      "Leaky Bucket — Smooth Output Rate",
-      "Fixed Window Counter (and why it's broken)",
-      "Sliding Window Counter — Best of Both Worlds",
-      "Distributed Rate Limiting Architecture",
-      "Rate Limiter Response Headers & Failure Modes",
-    ],
-    tags:  ["rate limiting", "token bucket", "leaky bucket", "sliding window", "redis", "lua", "429", "throttle", "api gateway", "cloudflare"],
-    path:  "../docs/api-networking/rate-limiting.md"
   },
 
   /* ── SEARCH & ANALYTICS ──────────────────────────────────────── */

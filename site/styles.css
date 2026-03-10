@@ -96,6 +96,7 @@
 .cat-foundation           { --cat: #f97316; --cat-bg: #fff7ed; }
 .cat-datastorage          { --cat: #8b5cf6; --cat-bg: #f5f3ff; }
 .cat-apinetworking        { --cat: #3b82f6; --cat-bg: #eff6ff; }
+.cat-cloudplatform        { --cat: #0284c7; --cat-bg: #f0f9ff; }
 .cat-distributedsystems   { --cat: #0d9488; --cat-bg: #f0fdfa; }
 .cat-searchanalytics      { --cat: #f59e0b; --cat-bg: #fffbeb; }
 .cat-scalereliability     { --cat: #22c55e; --cat-bg: #f0fdf4; }
@@ -107,6 +108,7 @@
 [data-theme="dark"] .cat-foundation         { --cat-bg: rgba(249,115,22,.12); }
 [data-theme="dark"] .cat-datastorage        { --cat-bg: rgba(139,92,246,.12); }
 [data-theme="dark"] .cat-apinetworking      { --cat-bg: rgba(59,130,246,.12); }
+[data-theme="dark"] .cat-cloudplatform      { --cat-bg: rgba(2,132,199,.12); }
 [data-theme="dark"] .cat-distributedsystems { --cat-bg: rgba(13,148,136,.12); }
 [data-theme="dark"] .cat-searchanalytics    { --cat-bg: rgba(245,158,11,.12); }
 [data-theme="dark"] .cat-scalereliability   { --cat-bg: rgba(34,197,94,.12); }

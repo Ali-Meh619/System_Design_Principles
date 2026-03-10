@@ -1,6 +1,6 @@
 # System Design & Machine Learning Playbook — Documentation
 
-> **43 in-depth topics** covering everything from interview frameworks to AI agent architectures and Machine Learning concepts. The goal is interview usefulness first: clear defaults, trade-offs, failure modes, and memorable answer patterns.
+> **48 in-depth topics** covering everything from interview frameworks to cloud platform design, AI agent architectures, and Machine Learning concepts. The goal is interview usefulness first: clear defaults, trade-offs, failure modes, and memorable answer patterns.
 
 ---
 
@@ -11,6 +11,7 @@
 | [📐 Foundation](foundation/README.md) | 4 | 🟢–🟡 | Interview structure, estimation, I/O, networking |
 | [🗄️ Data Storage](data/README.md) | 5 | 🟢–🔴 | Databases, caching, queues, CDN, internals |
 | [🔌 API & Networking](api-networking/README.md) | 4 | 🟢–🟡 | REST/gRPC/GraphQL, load balancing, rate limiting, WebSocket |
+| [☁️ Cloud & Platform](cloud-platform/README.md) | 5 | 🟢–🔴 | Cloud fundamentals, compute, deployment, networking, IAM, reliability, cost |
 | [🌐 Distributed Systems](distributed/README.md) | 5 | 🟡–🔴 | CAP, consistency, patterns, microservices, resilience |
 | [🔍 Search & Analytics](search/README.md) | 4 | 🟡–🔴 | Inverted index, typeahead, stream processing, geo, probabilistic DS |
 | [📈 Scale & Reliability](scale/README.md) | 6 | 🟡–🔴 | Observability, HA, IDs, pagination, notifications, advanced data patterns |
@@ -21,7 +22,7 @@
 
 ---
 
-## 📚 All 43 Topics
+## 📚 All 48 Topics
 
 ### 📐 Foundation
 - [Interview Framework — The Universal 4-Step Approach](foundation/interview-framework.md)
@@ -41,6 +42,13 @@
 - [Load Balancing & Networking](api-networking/load-balancing.md)
 - [Rate Limiting In Depth](api-networking/rate-limiting.md)
 - [Real-time Communication](api-networking/realtime-communication.md)
+
+### ☁️ Cloud & Platform
+- [Cloud Fundamentals & Shared Responsibility](cloud-platform/cloud-fundamentals.md)
+- [Compute & Deployment Patterns](cloud-platform/compute-deployment-patterns.md)
+- [Cloud Networking & Traffic Management](cloud-platform/cloud-networking-traffic-management.md)
+- [IAM, Secrets & Governance](cloud-platform/iam-secrets-governance.md)
+- [Reliability, Observability & Cost](cloud-platform/reliability-observability-cost.md)
 
 ### 🌐 Distributed Systems
 - [Distributed System Fundamentals](distributed/distributed-fundamentals.md)
@@ -120,13 +128,15 @@ Week 2:
 3. Distributed Locking
 4. Stream Processing + Top-K
 5. Geo Systems
-6. Advanced Data Patterns (CQRS, Event Sourcing)
-7. ID Generation + Pagination
-8. Authorization, SSO & MFA
-9. Privacy & Compliance + Secrets Management
-10. Rate Limiting In Depth
-11. Notification System Design
-12. Reusable Design Templates (all 12 blueprints)
+6. Cloud Fundamentals & Shared Responsibility
+7. Compute & Deployment Patterns
+8. Advanced Data Patterns (CQRS, Event Sourcing)
+9. ID Generation + Pagination
+10. Authorization, SSO & MFA
+11. Privacy & Compliance + Secrets Management
+12. Rate Limiting In Depth
+13. Notification System Design
+14. Reusable Design Templates (all 12 blueprints)
 ```
 
 ### Path 3: Staff/Principal Level
@@ -136,11 +146,13 @@ Week 2:
 2. ML in System Design + AI Agent System Design
 3. Classic Machine Learning + Deep Learning
 4. LLM Interview Questions (RAG, fine-tuning, inference)
-5. Secrets Management & Threat Modeling
-6. Probabilistic Data Structures
-7. Real-time Collaboration (CRDT vs OT)
-8. Webhooks at Scale
-9. LeetCode Question Patterns + Low-Level System Design
+5. Cloud Networking & Traffic Management
+6. IAM, Secrets & Governance + Reliability, Observability & Cost
+7. Secrets Management & Threat Modeling
+8. Probabilistic Data Structures
+9. Real-time Collaboration (CRDT vs OT)
+10. Webhooks at Scale
+11. LeetCode Question Patterns + Low-Level System Design
 ```
 
 ---
@@ -223,4 +235,4 @@ Missing a topic? Open an issue with the title "Topic Request: [topic name]".
 
 ---
 
-*Last updated: March 2026 | 43 topics across 10 categories*
+*Last updated: March 2026 | 48 topics across 11 categories*

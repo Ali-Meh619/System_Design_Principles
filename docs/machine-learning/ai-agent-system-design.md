@@ -72,6 +72,56 @@ Building agents from scratch using raw LLM APIs (like OpenAI's) is possible but 
 
 ---
 
+## Function Calling — How Tool Use Actually Works
+
+Function calling (tool use) is the mechanism by which an LLM invokes external tools. Understanding the mechanics is critical for agent design interviews.
+
+### The Function Calling Flow
+
+```
+1. System prompt defines available tools with JSON schemas:
+   tools: [{
+     name: "search_web",
+     description: "Search the internet for current information",
+     parameters: { query: string, num_results: int }
+   }]
+
+2. User message → LLM decides to call a tool
+   LLM output: { tool_calls: [{ name: "search_web", arguments: { query: "...", num_results: 5 } }] }
+
+3. Application executes the tool, returns result to LLM:
+   { role: "tool", content: "Search results: ..." }
+
+4. LLM generates final response using tool result
+```
+
+### Parallel vs Sequential Function Calls
+
+| Pattern | When | Example |
+|---------|------|---------|
+| **Single call** | Simple lookup | "What's the weather in NYC?" → weather_api() |
+| **Parallel calls** | Independent lookups | "Compare NYC and LA weather" → weather_api("NYC") + weather_api("LA") simultaneously |
+| **Sequential calls** | Result of one informs the next | "Find the CEO of Apple, then search their recent speeches" → search() → search() |
+
+### Tool Design Principles
+
+- **Descriptive names and docstrings** — the LLM uses these to decide when to call a tool
+- **Constrained schemas** — use enums, required fields, and type annotations to reduce malformed calls
+- **Idempotent reads** — GET-style tools should be safe to retry
+- **Confirmation for writes** — destructive operations need human approval
+- **Error messages, not stack traces** — return actionable errors the LLM can reason about
+
+### Common Function Calling Failures
+
+| Failure | Cause | Fix |
+|---------|-------|-----|
+| LLM calls nonexistent tool | Hallucinated tool name | Strict validation against tool registry |
+| Wrong argument types | Schema not constraining enough | Tighter JSON schema; retry with error |
+| Unnecessary tool calls | LLM doesn't know when to use tools vs knowledge | Better system prompt; few-shot examples |
+| Tool call loops | LLM keeps calling the same tool | Max iterations; detect repetition |
+
+---
+
 ## Tool Use & Safety Patterns
 
 Allowing LLMs to execute code or API calls creates massive risk (**Prompt Injection**, accidental deletion). Safety is an architectural requirement.
@@ -254,6 +304,178 @@ Total: 200-2000ms depending on response length
 
 ---
 
+## Observability & Tracing
+
+Production agents are non-deterministic multi-step systems. Without observability, debugging is nearly impossible.
+
+### What to Trace
+
+```
+Request ID: abc-123
+├── Step 1: LLM call (model: gpt-4, tokens: 1200, latency: 800ms)
+│   └── Decision: call tool "search_codebase"
+├── Step 2: Tool call (search_codebase, query: "auth middleware", latency: 120ms)
+│   └── Result: 3 files found
+├── Step 3: LLM call (model: gpt-4, tokens: 2400, latency: 1200ms)
+│   └── Decision: call tool "read_file"
+├── Step 4: Tool call (read_file, path: "src/auth.ts", latency: 5ms)
+│   └── Result: file contents
+├── Step 5: LLM call (model: gpt-4, tokens: 3100, latency: 1500ms)
+│   └── Decision: generate final answer
+└── Total: 5 steps, 6700 tokens, 3625ms, cost: $0.12
+```
+
+### Observability Stack
+
+| Layer | What to log | Tools |
+|-------|-------------|-------|
+| **Traces** | Full step-by-step agent execution path | LangSmith, Arize Phoenix, Langfuse, OpenTelemetry |
+| **LLM calls** | Prompt, completion, model, tokens, latency, cost | LangSmith, Helicone, PromptLayer |
+| **Tool calls** | Tool name, arguments, result, latency, success/failure | Custom logging + trace correlation |
+| **Evaluation** | Task success, judge scores, regression detection | LangSmith evaluators, Braintrust, custom |
+| **Alerts** | Cost spikes, latency spikes, error rate changes | PagerDuty, Grafana, custom thresholds |
+
+### Why Observability Is Critical for Agents
+
+- **Non-deterministic:** Same input → different execution paths each time
+- **Multi-step:** Failure at step 7 may be caused by a bad decision at step 2
+- **Cost control:** Without token tracking, costs can spike unexpectedly
+- **Regression detection:** New model versions may break previously working flows
+
+---
+
+## Agent Benchmarks & Evaluation
+
+Standardized benchmarks for measuring agent capabilities.
+
+| Benchmark | What it tests | Metric |
+|-----------|--------------|--------|
+| **SWE-bench** | Fix real GitHub issues from open-source repos | % of issues resolved correctly |
+| **SWE-bench Verified** | Curated subset with human-verified solutions | % resolved (higher quality subset) |
+| **WebArena** | Navigate and complete tasks on real websites | Task success rate |
+| **ToolBench** | Use of 16K+ real-world APIs | Pass rate on API tasks |
+| **GAIA** | General AI assistants (multi-step reasoning + tools) | Accuracy across difficulty levels |
+| **HumanEval** | Code generation (function completion) | Pass@k |
+| **AgentBench** | Multi-environment agent tasks (OS, DB, web, game) | Success rate per environment |
+
+### How to Evaluate Your Own Agent
+
+```
+Evaluation Pipeline:
+1. Build a test suite: 50-200 (input, expected_output/behavior) pairs
+2. Run agent on each test case
+3. Score with LLM-as-a-Judge:
+   - Did the agent complete the task? (binary)
+   - Was the tool usage correct? (rubric 1-5)
+   - Was the response accurate? (rubric 1-5)
+4. Track pass rate over time; set regression threshold (e.g., >85%)
+5. A/B test agent changes with statistical significance
+```
+
+**Key evaluation dimensions:**
+- **Task completion rate** — did it actually solve the problem?
+- **Tool efficiency** — did it use the minimum number of steps?
+- **Cost per task** — is it economically viable?
+- **Safety** — did it avoid harmful actions?
+- **Latency** — is it fast enough for the use case?
+
+---
+
+## Agentic Workflows — Concrete Patterns
+
+### Coding Agent Workflow
+
+```
+User: "Fix the failing test in auth.test.ts"
+  ↓
+Agent Plan:
+  1. Read the test file to understand the failure
+  2. Run the test to get the error message
+  3. Search codebase for relevant source code
+  4. Identify the bug
+  5. Apply the fix
+  6. Run test again to verify
+  ↓
+Execution (ReAct loop):
+  Observe: test error "TypeError: user.role is undefined"
+  Think: "The user object doesn't have a role field. Let me check the User model."
+  Act: read_file("src/models/user.ts")
+  Observe: role field exists but is optional
+  Think: "The test creates a user without a role. I need to add a default."
+  Act: edit_file("src/models/user.ts", add default role)
+  Act: run_test("auth.test.ts")
+  Observe: test passes ✓
+```
+
+### Research Agent Workflow
+
+```
+User: "What are the latest developments in MoE architectures?"
+  ↓
+Agent Plan:
+  1. Search academic papers (Semantic Scholar API)
+  2. Search tech blogs (web search)
+  3. Synthesize findings
+  4. Generate structured summary with citations
+  ↓
+Tools: search_papers(), web_search(), read_url(), write_report()
+```
+
+### Data Analysis Agent Workflow
+
+```
+User: "Analyze this CSV and find the top revenue drivers"
+  ↓
+Agent:
+  1. Read CSV schema and sample rows
+  2. Generate and execute Python code for EDA
+  3. Create visualizations
+  4. Interpret results
+  5. Generate natural language summary
+  ↓
+Tools: read_file(), execute_python(), create_chart()
+```
+
+---
+
+## Model Routing & Selection
+
+Production agents should use the right model for each subtask rather than one model for everything.
+
+```
+User request
+    ↓
+[Router / Classifier]
+    ├── Simple query (factual, short) → Fast model (GPT-4o-mini, Claude Haiku)
+    ├── Complex reasoning → Strong model (GPT-4, Claude Opus)
+    ├── Code generation → Code-specialized model (Claude Sonnet, Codestral)
+    ├── Structured extraction → Fine-tuned small model
+    └── Embedding/search → Embedding model (text-embedding-3-small)
+```
+
+### Router Implementation
+
+| Approach | How | Trade-off |
+|---------|-----|-----------|
+| **Keyword/regex** | Pattern match on input | Fast; brittle |
+| **Classifier** | Small model classifies task type | Accurate; needs training data |
+| **LLM-based** | Ask a cheap LLM to classify the task | Flexible; adds latency |
+| **Cascading** | Try cheap model first; escalate if confidence is low | Cost-efficient; higher latency for hard tasks |
+
+### Cost Optimization Pattern
+
+```
+Tier 1: GPT-4o-mini ($0.15/1M input) — handles 70% of requests
+Tier 2: GPT-4o ($2.50/1M input) — handles 25% of requests
+Tier 3: o1 / Claude Opus ($15/1M input) — handles 5% of complex requests
+
+Blended cost: ~$0.55/1M input vs $2.50 if using Tier 2 for everything
+```
+
+**Interview tip:** "In production, I'd never use one model for everything. A classifier routes simple requests to a fast, cheap model and only escalates to the expensive model for complex reasoning. This cuts costs by 70%+ while maintaining quality where it matters."
+
+---
+
 ## Prompt Injection — The Security Threat
 
 Prompt injection is where malicious content in the environment hijacks the agent's instructions:
@@ -331,3 +553,7 @@ I would design the agent as a loop, not a prompt: a planner/reactor LLM with mem
 - "For the coding agent: tools are UNIX commands (grep, cat, ls, git, python). Read-only by default. Write tools (edit file, git commit) require HITL approval."
 - "Evaluation: LLM-as-a-Judge with GPT-4o grading GPT-4 outputs against a rubric of 100 test cases. We target >85% pass rate before shipping a new agent version."
 - "Frameworks: LangGraph is the standard for complex, stateful agents because standard LangChain chains are too linear for real-world agent loops. For tool integration at scale, the Model Context Protocol (MCP) standardizes how agents securely talk to external APIs."
+- "Function calling: the LLM outputs structured JSON tool calls, the application executes them, and returns results as tool messages. Parallel calls for independent lookups, sequential for dependent ones. Schema validation prevents malformed calls."
+- "Observability: every agent step is traced — LLM calls with tokens and latency, tool calls with arguments and results, total cost per request. LangSmith or Langfuse for tracing, with alerts on cost spikes and error rate increases."
+- "Model routing: not every request needs GPT-4. A classifier routes 70% of simple requests to a fast cheap model, 25% to a mid-tier model, and only 5% of complex reasoning tasks to the expensive model. Cuts blended cost by 70%+."
+- "Agent benchmarks: SWE-bench measures ability to fix real GitHub issues (current SOTA ~50% resolved). We build custom eval suites of 100+ test cases, scored with LLM-as-a-Judge, targeting >85% pass rate before shipping."

@@ -158,10 +158,10 @@ Use the interactive site when you want navigation, quiz mode, and progress track
 <summary><strong>🩷 AI & Machine Learning (5)</strong></summary>
 
 - 🤖 [Machine Learning in System Design](docs/machine-learning/ml-in-system-design.md) — feature store, recommendation and ranking systems, rollout strategy, drift, serving latency, rollback
-- 🧠 [AI Agent System Design](docs/machine-learning/ai-agent-system-design.md) — planner/reactor loops, retrieval, tool reliability, memory, budgets, safety
-- 📈 [Classic Machine Learning](docs/machine-learning/classic-ml.md) — Bias-variance, bagging vs boosting, data leakage, XGBoost, SVM, PCA, class imbalance
-- 🔬 [Deep Learning](docs/machine-learning/deep-learning.md) — Weight init, backprop, Adam/AdamW, BatchNorm, CNN (ResNet), LSTM, full Transformer deep-dive
-- 💬 [LLM Interview Questions](docs/machine-learning/llm-interviews.md) — Transformers, RAG, LoRA/QLoRA, RLHF/DPO, decoding strategies, KV cache, CoT, hallucinations
+- 🧠 [AI Agent System Design](docs/machine-learning/ai-agent-system-design.md) — planner/reactor loops, function calling, retrieval, observability, agent benchmarks, model routing, budgets, safety
+- 📈 [Classic Machine Learning](docs/machine-learning/classic-ml.md) — Bias-variance, Naive Bayes, KNN, bagging vs boosting, SHAP/LIME, calibration, XGBoost, SVM, PCA
+- 🔬 [Deep Learning](docs/machine-learning/deep-learning.md) — Weight init, backprop, CNNs, LSTMs, full Transformer deep-dive, GANs, VAEs, diffusion, distillation, GQA/MQA
+- 💬 [LLM Interview Questions](docs/machine-learning/llm-interviews.md) — Tokenization, RAG, LoRA/QLoRA, RLHF/DPO, scaling laws, MoE, multi-modal models, KV cache, CoT
 
 </details>
 

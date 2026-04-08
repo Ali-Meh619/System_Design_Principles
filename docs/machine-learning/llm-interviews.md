@@ -71,7 +71,61 @@ Transformers have no inherent sense of order (unlike RNNs). Positions must be in
 
 ---
 
-## 2. Pre-training Objectives
+## 2. Tokenization
+
+Tokenization converts raw text into a sequence of integer IDs that the model can process. It's fundamental to how LLMs work, yet often overlooked in preparation.
+
+### Why Not Characters or Words?
+
+| Approach | Problem |
+|---------|---------|
+| **Characters** | Sequences too long; model struggles to learn word semantics from individual characters |
+| **Words** | Vocabulary too large (millions); cannot handle new/rare words (OOV problem) |
+| **Subwords** | Best of both — common words are single tokens, rare words decompose into known subparts |
+
+### Byte Pair Encoding (BPE) — The Standard
+
+The dominant algorithm (used by GPT-2/3/4, LLaMA, Mistral).
+
+```
+Algorithm:
+1. Start with character-level vocabulary
+2. Count all adjacent pairs in training corpus
+3. Merge the most frequent pair into a new token
+4. Repeat steps 2-3 until target vocab size reached
+
+Example progression:
+  "lower" → ['l', 'o', 'w', 'e', 'r']
+  After merging 'e'+'r' → 'er':  ['l', 'o', 'w', 'er']
+  After merging 'l'+'o' → 'lo':  ['lo', 'w', 'er']
+  After merging 'lo'+'w' → 'low': ['low', 'er']
+  After merging 'low'+'er' → 'lower': ['lower']
+```
+
+### Tokenizer Variants
+
+| Tokenizer | Algorithm | Used by | Key difference |
+|-----------|-----------|---------|---------------|
+| **BPE** | Frequency-based merges | GPT-2/3/4, LLaMA | Most common; greedy merges |
+| **WordPiece** | Likelihood-based merges | BERT, DistilBERT | Merges that maximize likelihood |
+| **Unigram (SentencePiece)** | Start large, prune tokens that least reduce likelihood | T5, LLaMA, XLNet | Probabilistic; multiple segmentations possible |
+| **Byte-level BPE** | BPE on raw bytes, not Unicode | GPT-2, LLaMA | Handles any language/encoding; no UNK tokens |
+
+### Tokenization Pitfalls (Common Interview Topics)
+
+**1. Tokenizer-model mismatch:** Using a different tokenizer than the one the model was trained with produces garbage embeddings. Always use the model's own tokenizer.
+
+**2. Token count ≠ word count:** "ChatGPT" might be split into ["Chat", "G", "PT"]. A 4096-token context window holds far fewer words than 4096. Rule of thumb: 1 token ≈ 0.75 English words, but varies by language.
+
+**3. Arithmetic difficulty:** Numbers like "42137" may tokenize as ["42", "137"] — the model never sees the full number as one unit, making arithmetic unreliable.
+
+**4. Multilingual inefficiency:** BPE trained primarily on English produces far more tokens per word in other languages (sometimes 3-5× more), consuming more context window and increasing cost.
+
+**5. Special tokens:** `[BOS]`, `[EOS]`, `[PAD]`, `[CLS]`, `[SEP]`, `[MASK]` — each model family uses different special tokens that control behavior.
+
+---
+
+## 3. Pre-training Objectives
 
 How LLMs learn language representations.
 
@@ -113,7 +167,7 @@ Used by: T5, BART, mT5, Flan-T5.
 
 ---
 
-## 3. Fine-Tuning Strategies
+## 4. Fine-Tuning Strategies
 
 ### Full Fine-Tuning
 
@@ -184,7 +238,7 @@ Steps:
 
 ---
 
-## 4. Retrieval-Augmented Generation (RAG)
+## 5. Retrieval-Augmented Generation (RAG)
 
 Augment LLM generation with relevant context retrieved from an external knowledge base. Addresses hallucination, staleness, and knowledge grounding.
 
@@ -234,7 +288,7 @@ User query
 
 ---
 
-## 5. Prompt Engineering
+## 6. Prompt Engineering
 
 ### Core Techniques
 
@@ -341,7 +395,7 @@ Production approaches: Outlines, Guidance, Instructor library, OpenAI structured
 
 ---
 
-## 6. Alignment: RLHF and DPO
+## 7. Alignment: RLHF and DPO
 
 Raw pretrained LLMs predict next tokens — they can generate harmful, dishonest, or unhelpful content. Alignment makes models helpful, harmless, and honest.
 
@@ -377,7 +431,7 @@ Loss = -log σ(β · (log π(chosen|x) - log π(rejected|x) - log π_ref(chosen|
 
 ---
 
-## 7. LLM Evaluation
+## 8. LLM Evaluation
 
 ### Automatic Metrics
 
@@ -425,7 +479,7 @@ User: "Prompt: {prompt}\nResponse: {response}\nScore and reasoning:"
 
 ---
 
-## 8. Hardware & Inference Optimization
+## 9. Hardware & Inference Optimization
 
 ### Mixed Precision Training & Inference
 
@@ -676,7 +730,7 @@ Sequence B (10 tokens): [page 3: tok 1-10, 6 slots free]
 
 ---
 
-## 9. Context Window & Long-Context
+## 10. Context Window & Long-Context
 
 | Model | Context Window |
 |-------|--------------|
@@ -752,7 +806,7 @@ Softmax normalises over the full sequence. As context grows, the denominator `Σ
 
 ---
 
-## 10. Hallucination & Grounding
+## 11. Hallucination & Grounding
 
 LLMs generate fluent, plausible-sounding text that may be factually wrong.
 
@@ -777,7 +831,7 @@ LLMs generate fluent, plausible-sounding text that may be factually wrong.
 
 ---
 
-## 11. Embeddings & Vector Search
+## 12. Embeddings & Vector Search
 
 ### Text Embeddings
 
@@ -800,6 +854,244 @@ Dense vector representations capturing semantic meaning. Similar texts have high
 | **FAISS** | Facebook's library implementing many ANN methods | Industry standard |
 
 **Recall vs Speed tradeoff:** More clusters / layers = higher recall but slower. Production systems typically target 95%+ recall at 10-50ms p99.
+
+---
+
+## 13. Scaling Laws
+
+Scaling laws describe the predictable relationship between model performance and compute, data, and parameters. Understanding them is essential for making resource allocation decisions.
+
+### Kaplan et al. (OpenAI, 2020) — Original Scaling Laws
+
+```
+Loss(N, D, C) ≈ (Nₒ/N)^αN + (Dₒ/D)^αD + L_irreducible
+
+Where:
+  N = number of parameters
+  D = dataset size (tokens)
+  C = compute budget (FLOPs)
+  L = cross-entropy loss
+```
+
+**Key findings:**
+- Performance improves as a **power law** with N, D, and C
+- Larger models are more **sample-efficient** (learn more per token)
+- Original recommendation: scale model size faster than data
+
+### Chinchilla (DeepMind, 2022) — The Correction
+
+Chinchilla showed that most large models were **undertrained** — they had too many parameters for the amount of data they saw.
+
+```
+Optimal allocation: N ∝ C^0.5,  D ∝ C^0.5
+
+Translation: Parameters and tokens should scale equally.
+For a compute-optimal model: tokens ≈ 20 × parameters
+
+Chinchilla (70B params, 1.4T tokens) > Gopher (280B params, 300B tokens)
+  despite being 4× smaller — because it saw 4.7× more data
+```
+
+**Practical implications:**
+- LLaMA-1 (7B) was trained on 1T tokens — roughly compute-optimal
+- GPT-4 is believed to be substantially "over-trained" (more tokens than Chinchilla-optimal) to improve inference economics — train longer once, serve a smaller model many times
+- **Inference-optimal scaling:** When inference cost dominates (production), it's cheaper to train a smaller model on more data than to serve a larger model
+
+### Emergent Abilities
+
+Some capabilities appear suddenly at specific scale thresholds:
+
+| Capability | Approximate threshold |
+|-----------|----------------------|
+| Few-shot learning | ~1B parameters |
+| Chain-of-thought reasoning | ~10B parameters |
+| Code generation | ~10B parameters |
+| Complex reasoning (GSM8K) | ~100B parameters |
+
+**Debate:** Recent work questions whether "emergence" is an artifact of discontinuous evaluation metrics rather than a true phase transition. With continuous metrics, performance scales smoothly.
+
+---
+
+## 14. Mixture of Experts (MoE)
+
+MoE is an architecture where only a subset of model parameters are activated for each input, enabling much larger models with the same computational cost.
+
+```
+Input x → Router (gating network) → selects top-k experts
+       → Expert 1: FFN₁(x) ─┐
+       → Expert 2: FFN₂(x) ─┤→ Weighted sum → output
+       → ...                 │
+       → Expert N: FFNₙ(x)  ┘  (only top-k are computed)
+```
+
+### How MoE Works
+
+Standard Transformer: every token goes through every FFN layer.
+MoE Transformer: a **router** selects k (typically 2) out of N experts per token.
+
+```
+Standard FFN:  Every token → FFN (d_model × d_ff × 2 parameters)
+MoE FFN:       Each token → Router → top-2 of 8 experts
+               Total parameters: 8× more
+               Active parameters per token: 2/8 = 25% (same compute as standard)
+```
+
+### Key Components
+
+| Component | What it does | Implementation |
+|-----------|-------------|---------------|
+| **Router / Gate** | Decides which experts handle each token | Linear layer → softmax → top-k selection |
+| **Experts** | Individual FFN modules | Standard FFN, each with full d_model × d_ff parameters |
+| **Load balancing loss** | Prevents all tokens from routing to the same expert | Auxiliary loss: penalize uneven expert utilization |
+| **Expert parallelism** | Distribute experts across GPUs | Each GPU holds a subset of experts; all-to-all communication |
+
+### MoE Models
+
+| Model | Total params | Active params | Experts | Top-k |
+|-------|-------------|---------------|---------|-------|
+| **Mixtral 8×7B** | 46.7B | ~12.9B | 8 | 2 |
+| **Mixtral 8×22B** | 141B | ~39B | 8 | 2 |
+| **GPT-4** (rumored) | ~1.8T | ~280B | 16 | 2 |
+| **DeepSeek-V2** | 236B | ~21B | 160 | 6 |
+| **Grok-1** | 314B | ~86B | 8 | 2 |
+
+### MoE Trade-offs
+
+| Advantage | Disadvantage |
+|-----------|-------------|
+| Much larger capacity per FLOP | Higher total memory (all experts must be loaded) |
+| Better performance at same compute | All-to-all communication overhead in distributed training |
+| Scales well beyond dense model limits | Load balancing is tricky; some experts may be underutilized |
+| Same inference latency as smaller dense model | More complex to serve; expert parallelism needed |
+
+### Router Collapse
+
+The biggest training failure mode: all tokens route to the same 1-2 experts, leaving others unused. Prevented by:
+- **Load balancing loss:** Penalize the variance in expert utilization
+- **Expert capacity factor:** Cap how many tokens each expert can handle per batch
+- **Random routing with noise:** Add noise to router logits during training
+
+**Interview tip:** "MoE lets you scale model capacity without proportionally scaling compute. Mixtral 8×7B has GPT-3.5-level performance with 12.9B active parameters because it has 8 specialized experts and routes each token to the best 2. The main challenge is load balancing — you need an auxiliary loss to prevent router collapse."
+
+---
+
+## 15. Multi-Modal Models
+
+Models that process and reason across multiple modalities (text, images, audio, video).
+
+### Vision-Language Models
+
+| Model | Architecture | Capabilities |
+|-------|-------------|-------------|
+| **CLIP** | Dual-encoder (image + text) | Zero-shot image classification, image-text retrieval |
+| **LLaVA** | Vision encoder + LLM (projection layer) | Visual Q&A, image reasoning |
+| **GPT-4V / GPT-4o** | Native multimodal | Image understanding, OCR, diagram analysis |
+| **Gemini** | Natively multimodal from pre-training | Text, image, video, audio, code |
+
+### CLIP — Contrastive Language-Image Pre-training
+
+```
+Image → Vision Encoder (ViT) → image embedding ──┐
+                                                   ├→ cosine similarity
+Text  → Text Encoder (Transformer) → text embedding ┘
+
+Training: for N (image, text) pairs:
+  maximize similarity of correct pairs
+  minimize similarity of incorrect pairs
+```
+
+**CLIP's power:** Zero-shot classification — describe any class in text ("a photo of a cat"), compute similarity with an image, no task-specific training needed.
+
+### LLaVA-style Architecture
+
+```
+Image → Pre-trained Vision Encoder → visual tokens
+                                         ↓
+                                    [Projection Layer]
+                                         ↓
+Text tokens + Visual tokens → Pre-trained LLM → response
+```
+
+**Training stages:**
+1. Pre-train projection layer on image-caption pairs (align visual tokens to LLM space)
+2. Fine-tune end-to-end on visual instruction data (visual Q&A, reasoning)
+
+### Multi-Modal Interview Points
+
+- **Modality alignment:** The core challenge is mapping different modalities into a shared representation space
+- **Visual tokens:** Images are converted to sequences of tokens (ViT patches), treated like text tokens by the LLM
+- **Cost:** Images are expensive — a single 1024×1024 image may consume 1000+ tokens of context
+- **Hallucination in vision:** Models may "see" things that aren't there; more severe than text-only hallucination
+
+---
+
+## 16. Constitutional AI & Safety
+
+Beyond RLHF/DPO, Anthropic's Constitutional AI (CAI) provides a scalable alignment approach using principles rather than human labels.
+
+### How Constitutional AI Works
+
+```
+Step 1: Red-teaming — generate harmful outputs from the model
+Step 2: Self-critique — ask the model to critique its own response against a constitution
+        "Does this response violate the principle: 'Choose the response that is least harmful'?"
+Step 3: Revision — model revises its response based on the critique
+Step 4: RLAIF — use the revised outputs for preference training (RL from AI Feedback)
+```
+
+**Key insight:** Instead of human labelers judging every response, define a set of principles (the "constitution") and have the AI judge itself against those principles. This is more scalable and consistent than human feedback alone.
+
+### The Constitution
+
+A set of natural language principles, for example:
+- "Choose the response that is most helpful to the human"
+- "Choose the response that is least likely to be used to harm someone"
+- "Choose the response that is most honest"
+
+### Guardrails in Production
+
+| Guardrail | Implementation | Purpose |
+|-----------|---------------|---------|
+| **Input filtering** | Classifier on user messages | Block prompt injection, jailbreaks |
+| **Output filtering** | Classifier on model responses | Block harmful, biased, or PII-containing outputs |
+| **NeMo Guardrails** | NVIDIA's framework; LLM-based dialogue rails | Topical control, safety, hallucination prevention |
+| **Guardrails AI** | Schema validation + LLM validators | Structured output validation, factuality checking |
+| **Red-teaming** | Adversarial testing before deployment | Find failure modes proactively |
+
+---
+
+## 17. Synthetic Data & Data Curation
+
+Increasingly, the quality and curation of training data matters more than the model architecture.
+
+### Synthetic Data Generation
+
+| Method | How | Use case |
+|--------|-----|---------|
+| **LLM-generated** | Use GPT-4/Claude to generate training examples | Instruction tuning (Alpaca, WizardLM) |
+| **Self-instruct** | Model generates instructions, inputs, and outputs | Bootstrap training data from a seed set |
+| **Evol-Instruct** | Iteratively make instructions more complex | WizardLM; progressive difficulty |
+| **Distillation** | Large model generates outputs; train smaller model | Most cost-effective for specific tasks |
+| **Back-translation / Paraphrase** | Generate variations of existing data | Data augmentation for NLP |
+
+### Data Quality > Data Quantity
+
+| Principle | Evidence |
+|-----------|---------|
+| **LIMA (Less Is More for Alignment)** | 1,000 carefully curated examples can align a model as well as 52K noisy ones |
+| **Phi-1 / Phi-2 (Microsoft)** | "Textbook-quality" data enables small models to outperform much larger ones |
+| **Data deduplication** | Removing duplicates improves quality; training on duplicates causes memorization |
+| **Data mixing** | Optimal ratios of code, math, text, reasoning data for balanced capabilities |
+
+### Data Contamination
+
+A critical evaluation concern: if benchmark test data appears in the training set, reported scores are inflated.
+
+- **Detection:** n-gram overlap analysis between training corpus and benchmark
+- **Prevention:** Release benchmarks after training cutoff; use dynamic benchmarks (Chatbot Arena)
+- **Impact:** Models may score 90%+ on GSM8K while failing on rephrased versions of the same problems
+
+**Interview tip:** "Modern LLM improvements come as much from data curation as from architecture. Phi-2 showed that 1.3B parameters trained on textbook-quality synthetic data can match models 10× larger on reasoning benchmarks. The trend is toward smaller, better-trained models — which aligns with Chinchilla scaling laws."
 
 ---
 
@@ -837,3 +1129,15 @@ Dense vector representations capturing semantic meaning. Similar texts have high
 
 **"Explain the prefill vs decode distinction in LLM inference"**
 → Prefill processes the full prompt in a single parallel forward pass — compute-bound (bottlenecked by FLOPS). Decode generates one token at a time — memory-bound (bottlenecked by loading model weights from GPU HBM each step). This is why throughput and latency scale differently. Disaggregated serving routes them to separate GPU pools optimized for each workload.
+
+**"What are scaling laws and how do they guide training decisions?"**
+→ Performance improves as a power law with model size, data, and compute. Chinchilla (2022) showed most models were undertrained: optimal allocation uses ~20 tokens per parameter. A 7B model should see ~140B tokens. In production, "over-training" smaller models (more tokens than optimal) makes sense because you train once but serve millions of times — inference cost dominates.
+
+**"How does Mixture of Experts (MoE) work?"**
+→ Replace the dense FFN in each Transformer layer with N expert FFNs and a learned router. Each token is routed to the top-k experts (typically 2 of 8). Total parameters are N× larger, but active parameters per token stay the same. Mixtral 8×7B has 46.7B total but only activates 12.9B per token. Main challenge: router collapse — need load balancing loss to ensure all experts are utilized.
+
+**"How does tokenization affect LLM behavior?"**
+→ BPE splits text into subword tokens based on frequency in the training corpus. This means: (1) arithmetic is hard because numbers like "42137" split into ["42","137"], (2) non-English text uses 3-5× more tokens reducing effective context, (3) the tokenizer must match the model — using the wrong one produces garbage. Token count ≈ 1.3× word count for English.
+
+**"How do multi-modal models like GPT-4V process images?"**
+→ Images are split into patches (like ViT), projected into the same embedding space as text tokens via a learned projection layer, then fed into the LLM alongside text tokens. The LLM treats visual tokens like text. Main challenges: images are expensive (~1000+ tokens each), visual hallucination is more severe than text, and modality alignment requires careful pre-training.

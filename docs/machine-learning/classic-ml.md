@@ -188,7 +188,91 @@ Where `η` = learning rate (shrinkage).
 
 ---
 
-## 5. Support Vector Machines (SVM)
+## 5. Naive Bayes
+
+A probabilistic classifier based on Bayes' theorem with the **naive** assumption that features are conditionally independent given the class.
+
+```
+P(y|x₁,...,xₙ) ∝ P(y) · ∏ P(xᵢ|y)
+```
+
+### Why "Naive"?
+
+The independence assumption is almost never true in practice (e.g., word frequencies in text are correlated), yet Naive Bayes works surprisingly well because:
+- Classification only needs the **most probable class**, not calibrated probabilities
+- Errors in individual feature probabilities often cancel out
+- With limited data, fewer parameters to estimate = lower variance
+
+### Variants
+
+| Variant | Distribution assumed | Use case |
+|---------|---------------------|----------|
+| **Gaussian NB** | Features are continuous, normally distributed | Real-valued features |
+| **Multinomial NB** | Features are counts (word frequencies) | Text classification (bag-of-words, TF-IDF) |
+| **Bernoulli NB** | Features are binary (word present/absent) | Short text, binary features |
+| **Complement NB** | Corrects for imbalanced classes | Imbalanced text classification |
+
+### When Naive Bayes Shines
+
+- **Text classification** (spam detection, sentiment) — the classic use case
+- **Very fast** training and inference: O(n·d) where n = samples, d = features
+- Works well with **high-dimensional sparse data** (thousands of features, few samples)
+- Strong baseline that's hard to beat with small datasets
+
+### When It Fails
+
+- Highly correlated features violate the independence assumption badly
+- Cannot learn feature interactions (unlike trees or neural networks)
+- Probability estimates are poorly calibrated (confidences are extreme)
+
+**Interview tip:** Naive Bayes is the go-to answer for "What's a simple baseline for text classification?" It's also a great example of a high-bias, low-variance model — complements the bias-variance discussion.
+
+---
+
+## 6. K-Nearest Neighbors (KNN)
+
+A non-parametric, instance-based algorithm: store all training data, classify new points by majority vote of their k nearest neighbors.
+
+```
+1. Compute distance from query point to all training points
+2. Select k nearest neighbors
+3. Classification: majority vote    |    Regression: average of k values
+```
+
+### Distance Metrics
+
+| Metric | Formula | Use case |
+|--------|---------|----------|
+| **Euclidean** | `√(Σ(xᵢ - yᵢ)²)` | Default; continuous features |
+| **Manhattan** | `Σ|xᵢ - yᵢ|` | High-dimensional or sparse data |
+| **Cosine** | `1 - (x·y)/(‖x‖·‖y‖)` | Text/embeddings (direction matters, not magnitude) |
+| **Minkowski** | `(Σ|xᵢ-yᵢ|^p)^(1/p)` | Generalization of Euclidean (p=2) and Manhattan (p=1) |
+
+### Key Properties
+
+- **No training phase** — all computation at inference ("lazy learning")
+- **Feature scaling is critical** — features with larger ranges dominate distance calculations
+- **Curse of dimensionality** — in high dimensions, all points become equidistant; KNN breaks down
+- **Choosing k:** Small k → low bias, high variance (noisy). Large k → high bias, low variance (smooth). Use cross-validation. Odd k avoids ties in binary classification.
+
+### When to Use KNN
+
+- Small datasets where simplicity matters
+- Non-linear decision boundaries
+- As a baseline before trying complex models
+- When interpretability via examples matters ("here are the 5 most similar cases")
+
+### When NOT to Use KNN
+
+- Large datasets (inference is O(n·d) per query)
+- High-dimensional data (curse of dimensionality)
+- When features are on different scales (unless you scale first)
+
+**Optimization:** KD-Trees or Ball Trees reduce search from O(n) to O(log n) in low dimensions. For high-dimensional approximate search, use ANN algorithms (FAISS, HNSW).
+
+---
+
+## 7. Support Vector Machines (SVM)
 
 SVMs find the **maximum-margin hyperplane** separating classes. The margin is the gap between the plane and the nearest data points (support vectors).
 
@@ -218,7 +302,7 @@ Real data is rarely linearly separable. Kernels map data to higher dimensions wi
 
 ---
 
-## 6. Logistic Regression
+## 8. Logistic Regression
 
 Despite the name, it's a **classification** algorithm. The output is a probability via the sigmoid function.
 
@@ -239,7 +323,7 @@ P(y=1|x) = σ(w·x + b) = 1 / (1 + exp(-(w·x + b)))
 
 ---
 
-## 7. K-Means Clustering
+## 9. K-Means Clustering
 
 Unsupervised algorithm that partitions n observations into k clusters by minimizing within-cluster variance.
 
@@ -262,7 +346,7 @@ Plot inertia (within-cluster sum of squares) vs k. The "elbow" is where adding m
 
 ---
 
-## 8. Dimensionality Reduction: PCA
+## 10. Dimensionality Reduction: PCA
 
 PCA finds the directions (**principal components**) of maximum variance in the data and projects data onto them.
 
@@ -284,7 +368,7 @@ Original features (high-dim) → PCA transformation → New axes (lower-dim)
 
 ---
 
-## 9. Cross-Validation
+## 11. Cross-Validation
 
 Robust way to estimate generalization performance without wasting data.
 
@@ -302,7 +386,7 @@ Robust way to estimate generalization performance without wasting data.
 
 ---
 
-## 10. Class Imbalance
+## 12. Class Imbalance
 
 Real-world datasets are often skewed (e.g., fraud detection: 0.1% positive).
 
@@ -335,7 +419,7 @@ Originally introduced in **RetinaNet** for object detection (background vastly o
 
 ---
 
-## 11. Feature Engineering
+## 13. Feature Engineering
 
 Often more impactful than algorithm choice.
 
@@ -390,7 +474,7 @@ imputer.fit(X_all)   # sees test data statistics
 
 ---
 
-## 12. Data Leakage
+## 14. Data Leakage
 
 **Data leakage** occurs when information from outside the training window "leaks" into the model, producing optimistically biased evaluation metrics that don't hold in production. It's one of the most common and costly mistakes in applied ML.
 
@@ -457,7 +541,7 @@ Correct: Split by patient_id, not by image
 
 ---
 
-## 13. High-Dimensional Features
+## 15. High-Dimensional Features
 
 When your dataset has many features (p >> n, or p in the thousands), naive ML breaks down.
 
@@ -531,7 +615,7 @@ n < p (more features than samples)?
 
 ---
 
-## 14. Hyperparameter Tuning
+## 16. Hyperparameter Tuning
 
 | Method | How | Pros/Cons |
 |--------|-----|-----------|
@@ -544,7 +628,206 @@ n < p (more features than samples)?
 
 ---
 
-## 15. Interview Quick-Reference
+## 17. Model Interpretability: SHAP & LIME
+
+Understanding *why* a model makes a prediction is increasingly critical — for debugging, regulatory compliance, and stakeholder trust. This is one of the hottest ML interview topics.
+
+### Feature Importance vs Explainability
+
+| Method | Scope | How it works | Pros | Cons |
+|--------|-------|-------------|------|------|
+| **Impurity-based importance** | Global | Mean decrease in Gini/entropy across all splits | Fast; built into sklearn | Biased toward high-cardinality features |
+| **Permutation importance** | Global | Shuffle feature, measure accuracy drop | Model-agnostic; unbiased | Misleading with correlated features |
+| **SHAP (SHapley Additive exPlanations)** | Local + Global | Game-theory: contribution of each feature to each prediction | Mathematically grounded; consistent | Expensive for large models |
+| **LIME (Local Interpretable Model-Agnostic Explanations)** | Local | Fit a simple model (linear/tree) on perturbed samples near the point | Fast; intuitive | Explanations can be unstable |
+| **Partial Dependence Plots (PDP)** | Global | Show marginal effect of a feature on prediction | Easy to understand | Assumes feature independence |
+| **ICE (Individual Conditional Expectation)** | Local | PDP for individual instances | Shows heterogeneity | Can be noisy with many lines |
+
+### SHAP — The Gold Standard
+
+SHAP values are based on **Shapley values** from cooperative game theory. For each prediction, each feature gets a value representing its contribution to the difference between the prediction and the average prediction.
+
+```
+f(x) = base_value + SHAP(feature₁) + SHAP(feature₂) + ... + SHAP(featureₙ)
+
+Example (loan approval):
+  Base prediction: 65% approval
+  + Income:        +20% (high income helps)
+  + Credit score:  +10% (good score helps)
+  + Debt ratio:    -15% (high debt hurts)
+  = Final:          80% approval
+```
+
+**Key properties:**
+- **Additivity:** SHAP values sum to the difference between prediction and mean
+- **Consistency:** If a feature's contribution increases, its SHAP value never decreases
+- **Local accuracy:** The explanation exactly matches the model output
+
+**TreeSHAP:** Optimized O(TLD²) algorithm for tree models (vs exponential for exact Shapley). Built into XGBoost and LightGBM.
+
+### LIME — Quick Local Explanations
+
+```
+1. Pick instance to explain
+2. Generate perturbed samples around it
+3. Get model predictions for perturbed samples
+4. Fit a simple interpretable model (weighted by proximity)
+5. The simple model's coefficients = explanation
+```
+
+**When to use LIME over SHAP:** When you need fast, approximate explanations for black-box models (neural nets, APIs) and SHAP is too expensive.
+
+**Interview tip:** "For tree models, I'd use TreeSHAP (fast, exact). For neural networks or black-box APIs, I'd use LIME or KernelSHAP. For global understanding, I'd plot SHAP summary plots (beeswarm). For regulatory compliance, SHAP's mathematical guarantees (consistency, additivity) are stronger than LIME."
+
+---
+
+## 18. Probability Calibration
+
+A model's predicted probability should match the true frequency. If a model predicts 80% confidence for 1000 samples, roughly 800 should actually be positive. Many models are **not** well-calibrated out of the box.
+
+### Why Calibration Matters
+
+- **Decision thresholds:** If probabilities are miscalibrated, tuning the classification threshold produces unexpected results
+- **Risk scoring:** In medical, fraud, or insurance applications, probabilities directly drive decisions
+- **Model combination:** Ensembling requires calibrated scores to weight models properly
+- **Ranking is not enough:** A model can rank well (high AUC) but have terrible probability estimates
+
+### Which Models Are Well-Calibrated?
+
+| Model | Calibration quality | Why |
+|-------|-------------------|-----|
+| **Logistic Regression** | Good (inherently calibrated) | Optimizes log loss directly |
+| **Random Forest** | Poor — overconfident near 0/1 | Votes are discrete fractions |
+| **XGBoost / GBMs** | Moderate — depends on objective | Log loss objective helps |
+| **Neural Networks** | Often overconfident | Modern NNs tend to be miscalibrated |
+| **SVM** | No probabilities by default | Needs Platt scaling to output probs |
+| **Naive Bayes** | Very poor — extreme probabilities | Independence assumption distorts |
+
+### Calibration Methods
+
+| Method | How it works | When to use |
+|--------|-------------|-------------|
+| **Platt Scaling** | Fit a logistic regression on model outputs vs true labels | Binary classification; works well with sigmoid-shaped distortions |
+| **Isotonic Regression** | Fit a non-decreasing step function | More flexible; needs more data (~1000+ samples) |
+| **Temperature Scaling** | Divide logits by learned T before softmax | Neural networks; single parameter; multiclass |
+
+### Measuring Calibration
+
+- **Reliability diagram:** Plot predicted probability vs observed frequency in bins. Perfect calibration = diagonal line.
+- **Expected Calibration Error (ECE):** Weighted average of |predicted_prob - observed_freq| across bins. Lower = better.
+- **Brier Score:** `mean((predicted - actual)²)` — combines calibration and discrimination.
+
+```
+Reliability Diagram:
+Observed freq
+     1.0 |          ·  /
+         |        ·  /
+     0.5 |    ·   /       ← well-calibrated (near diagonal)
+         |  ·  /
+     0.0 |·/
+         └────────────
+          0.0       1.0
+         Predicted probability
+```
+
+**Interview tip:** "I'd check calibration with a reliability diagram and ECE. If the model is overconfident (most are), I'd apply Platt scaling for binary or temperature scaling for multiclass. Calibration is essential when probabilities drive business decisions — 'is this user 90% likely to churn?' needs to actually mean 90%."
+
+---
+
+## 19. Stacking & Advanced Ensembles
+
+Beyond bagging and boosting, **stacking** (stacked generalization) is a powerful ensemble technique that uses a meta-learner to combine base model predictions.
+
+### How Stacking Works
+
+```
+Training:
+  Fold 1: Train Models A,B,C on folds 2-5 → predict on fold 1
+  Fold 2: Train Models A,B,C on folds 1,3-5 → predict on fold 2
+  ...
+  Result: out-of-fold predictions from each base model
+
+  Meta-learner: Train on [pred_A, pred_B, pred_C] → final prediction
+
+Inference:
+  Input → Model A prediction ─┐
+        → Model B prediction ─┤→ Meta-learner → final prediction
+        → Model C prediction ─┘
+```
+
+**Key rules:**
+- Base models should be **diverse** (e.g., Random Forest + XGBoost + Logistic Regression + Neural Net)
+- Use **out-of-fold predictions** for meta-learner training to avoid data leakage
+- Meta-learner is typically simple (logistic regression, ridge regression) to avoid overfitting
+- Can stack multiple levels (but diminishing returns after 2)
+
+### Stacking vs Bagging vs Boosting
+
+| | Bagging | Boosting | Stacking |
+|-|---------|---------|---------|
+| Base models | Same type, different data | Same type, sequential | Different types |
+| Training | Parallel | Sequential | Two-stage |
+| Reduces | Variance | Bias | Both (via diversity) |
+| Example | Random Forest | XGBoost | RF + XGB + LR → meta |
+
+### Blending (Simplified Stacking)
+
+Use a simple holdout set (instead of cross-validation) for meta-learner training. Faster but wastes data.
+
+**Interview tip:** Stacking typically wins Kaggle competitions but adds complexity in production. In interviews, mention it to show depth but note the operational trade-off.
+
+---
+
+## 20. Learning Curves & Diagnosing Model Performance
+
+Learning curves plot model performance vs training set size or training iterations. They're the primary diagnostic tool for bias-variance analysis.
+
+### Training Size Learning Curve
+
+```
+Error
+  │
+  │  ─── Training error (rises as data grows — harder to memorize)
+  │  
+  │  ─── Validation error (drops as data grows — better generalization)
+  │
+  │            Gap = variance
+  └─────────────────────────── Training set size
+
+High Bias (underfitting):         High Variance (overfitting):
+Error                              Error
+  │  val ──────────────             │  val ──────────
+  │                                 │        \        ← large gap
+  │  train ────────────             │           train ──
+  │  ↑ both high, close gap         │  ↑ small train err, big gap
+  └──────────────────               └──────────────────
+   Training set size                 Training set size
+```
+
+### What Learning Curves Tell You
+
+| Pattern | Diagnosis | Action |
+|---------|-----------|--------|
+| Both errors high, converging | **High bias** | More features, bigger model, less regularization |
+| Train low, val high, not converging | **High variance** | More data, regularization, simpler model |
+| Both errors low, converging | **Good fit** | Deploy |
+| Train error increasing with data | Normal — harder to memorize more data | Not a problem |
+| Val error not improving with more data | Model has learned all it can from this feature set | Better features, different algorithm |
+
+### Practical Usage
+
+```python
+from sklearn.model_selection import learning_curve
+train_sizes, train_scores, val_scores = learning_curve(
+    model, X, y, train_sizes=np.linspace(0.1, 1.0, 10), cv=5
+)
+```
+
+**Interview tip:** When asked "how would you debug a model that's performing poorly?", learning curves should be your first tool. They tell you whether you need more data (variance problem) or a better model (bias problem).
+
+---
+
+## 21. Interview Quick-Reference
 
 **"Your model is overfitting, what do you do?"**
 → More training data → add regularization (L2) → reduce model complexity → dropout / early stopping → feature selection to remove noise
@@ -569,3 +852,15 @@ n < p (more features than samples)?
 
 **"Bagging vs Boosting — what does each reduce?"**
 → Bagging reduces variance by averaging independent models (Random Forest). Boosting reduces bias by sequentially fixing errors (XGBoost). Bagging is parallelizable; Boosting is sequential. Use Random Forest as a fast robust baseline; use XGBoost when you need maximum accuracy on tabular data.
+
+**"When would you use Naive Bayes?"**
+→ Text classification (spam, sentiment) with bag-of-words/TF-IDF features. It's fast (O(n·d) training), works well with high-dimensional sparse data, and gives a strong baseline that's surprisingly hard to beat on small text datasets. Fails when features are highly correlated.
+
+**"Explain KNN and its limitations"**
+→ Store all training data. Classify by majority vote of k nearest neighbors. No training phase (lazy learning). Main limitations: O(n·d) inference, curse of dimensionality makes distances meaningless in high dimensions, requires feature scaling. Use KD-trees for speedup. Good for small datasets and when you want example-based explanations.
+
+**"How do you explain your model's predictions?"**
+→ For tree models: TreeSHAP (fast, exact Shapley values). For any model: permutation importance (global) or LIME (local). SHAP is the gold standard — each feature gets a value representing its contribution, values are additive and consistent. For regulatory compliance, SHAP's mathematical guarantees are strongest.
+
+**"Your model has good AUC but bad real-world performance"**
+→ Likely a calibration problem. Good AUC means the model ranks well, but the predicted probabilities may not be trustworthy. Check with a reliability diagram. Apply Platt scaling (binary) or temperature scaling (multiclass). Calibration matters when probabilities drive business decisions (loan risk, insurance pricing).

@@ -334,7 +334,210 @@ Head → replace entirely for new task
 
 ---
 
-## 12. Training at Scale
+## 12. Generative Models
+
+Generative models learn the underlying data distribution P(x) and can generate new samples. They are among the most commonly asked deep learning interview topics.
+
+### Autoencoders
+
+Compress data into a low-dimensional latent space, then reconstruct. The bottleneck forces the network to learn a compressed representation.
+
+```
+Input x → [Encoder] → Latent z (bottleneck) → [Decoder] → Reconstructed x̂
+Loss = ||x - x̂||²  (reconstruction error)
+```
+
+| Variant | Key difference | Use case |
+|---------|---------------|----------|
+| **Vanilla AE** | Deterministic bottleneck | Dimensionality reduction, denoising |
+| **Denoising AE** | Add noise to input, reconstruct clean version | Robust feature learning |
+| **Sparse AE** | L1 penalty on latent activations | Feature discovery with sparsity |
+| **Variational AE (VAE)** | Latent space is a probability distribution | Generation, interpolation |
+
+### Variational Autoencoders (VAEs)
+
+Instead of encoding to a fixed point, encode to a **distribution** (mean μ and variance σ²). Sample from this distribution to decode.
+
+```
+Input x → Encoder → (μ, σ²) → z = μ + σ·ε (reparameterization trick) → Decoder → x̂
+
+Loss = Reconstruction Loss + KL Divergence
+     = ||x - x̂||² + KL(q(z|x) || p(z))
+```
+
+**Reparameterization trick:** To backpropagate through sampling, express z = μ + σ·ε where ε ~ N(0,1). Gradients flow through μ and σ, not through the sampling operation.
+
+**KL Divergence term:** Regularizes the latent space to be close to N(0,1), ensuring smooth interpolation between data points.
+
+### Generative Adversarial Networks (GANs)
+
+Two networks in a minimax game:
+- **Generator G:** Takes random noise z → generates fake data G(z)
+- **Discriminator D:** Classifies inputs as real or fake
+
+```
+Random noise z → [Generator G] → Fake image G(z) ─┐
+Real image x ──────────────────────────────────────┤→ [Discriminator D] → Real/Fake
+                                                   │
+min_G max_D  E[log D(x)] + E[log(1 - D(G(z)))]
+```
+
+**Training dynamics:**
+1. Train D to distinguish real from fake (maximize correct classification)
+2. Train G to fool D (minimize D's ability to tell fake from real)
+3. At equilibrium, G produces data indistinguishable from real
+
+**Common GAN problems:**
+
+| Problem | What happens | Fix |
+|---------|-------------|-----|
+| **Mode collapse** | Generator produces limited variety of outputs | Wasserstein loss, minibatch discrimination |
+| **Training instability** | Loss oscillates, never converges | Spectral normalization, progressive growing |
+| **Vanishing gradients for G** | D becomes too good, G gradient → 0 | Wasserstein GAN (WGAN), gradient penalty |
+
+**Key GAN variants:**
+- **DCGAN:** Convolutional architecture, first stable GAN for images
+- **WGAN:** Uses Wasserstein distance, much more stable training
+- **StyleGAN:** State-of-art face generation, style-based generator
+- **Conditional GAN (cGAN):** Condition generation on a label or image (pix2pix)
+
+### Diffusion Models (DDPM)
+
+The current state-of-the-art for image generation (DALL-E, Stable Diffusion, Midjourney).
+
+```
+Forward process (fixed):   x₀ → x₁ → x₂ → ... → xₜ  (gradually add Gaussian noise)
+Reverse process (learned): xₜ → xₜ₋₁ → ... → x₀    (learn to denoise step by step)
+```
+
+**Key intuition:** Training is simple — add noise to data, train a neural network (U-Net) to predict and remove the noise. At generation time, start from pure noise and iteratively denoise.
+
+**Why diffusion beats GANs:**
+- No adversarial training instability
+- No mode collapse — learns the full distribution
+- Better sample quality and diversity
+- Easier to train (simple MSE loss on noise prediction)
+
+**Trade-off:** Diffusion is slow at inference (many denoising steps). Solutions: DDIM (fewer steps), latent diffusion (work in compressed space), distillation.
+
+### Comparison of Generative Models
+
+| | VAE | GAN | Diffusion |
+|-|-----|-----|-----------|
+| Training | Stable | Unstable | Stable |
+| Sample quality | Blurry | Sharp | Best |
+| Diversity | Good | Mode collapse risk | Best |
+| Speed | Fast | Fast | Slow |
+| Latent space | Smooth, interpretable | No clear latent space | No clear latent space |
+| Use case | Representation learning, interpolation | Image synthesis, style transfer | Image/video generation, art |
+
+---
+
+## 13. Knowledge Distillation
+
+Transfer knowledge from a large "teacher" model to a smaller "student" model. The student learns to match the teacher's output distribution (soft labels), not just the hard labels.
+
+```
+Input x → Teacher (large, frozen) → soft predictions (logits / T)
+       → Student (small, trainable) → soft predictions (logits / T)
+
+Loss = α · KL(teacher_soft, student_soft) + (1-α) · CE(hard_labels, student_hard)
+```
+
+**Why soft labels help:** A teacher predicting [cat: 0.7, dog: 0.2, bird: 0.1] conveys richer information than the hard label "cat" — it tells the student that this image somewhat resembles a dog. This "dark knowledge" helps the student generalize better.
+
+**Temperature T:** Higher T softens probability distribution, making the dark knowledge more visible. Typical T = 3-20 during distillation; T = 1 at inference.
+
+### Distillation Use Cases
+
+| Scenario | Teacher → Student | Why |
+|---------|------------------|-----|
+| **Model compression** | BERT-large → DistilBERT | 60% size, 97% performance, 2× faster |
+| **LLM distillation** | GPT-4 → small fine-tuned model | Cost reduction for specific tasks |
+| **Ensemble → single model** | 5 models → 1 model | Production simplicity |
+| **Self-distillation** | Model → same architecture | Born-Again Networks; improves over original |
+
+**Interview tip:** Distillation is how most production LLM applications work — you don't run GPT-4 for every request. You distill its behavior for your specific task into a smaller, cheaper model.
+
+---
+
+## 14. Data Augmentation
+
+Artificially expand training data by applying label-preserving transformations. Often more impactful than model improvements.
+
+### Vision Augmentation
+
+| Technique | Transform | Effect |
+|-----------|----------|--------|
+| **Random crop + resize** | Crop random region, resize to original | Translation invariance; most impactful single augmentation |
+| **Horizontal flip** | Mirror image | Doubles data; don't use for asymmetric tasks (text OCR) |
+| **Color jitter** | Random brightness, contrast, saturation, hue | Robustness to lighting conditions |
+| **Random erasing / Cutout** | Black out random patches | Forces model to use all features, not just dominant ones |
+| **Mixup** | Blend two images and their labels: `x̃ = λx₁ + (1-λ)x₂` | Smoother decision boundaries; reduces overfitting |
+| **CutMix** | Paste a patch from one image onto another; blend labels | Combines benefits of Cutout and Mixup |
+| **RandAugment** | Random sequence of N augmentations from a pool | AutoML-style; single hyperparameter M (magnitude) |
+| **AutoAugment** | RL-searched augmentation policies | Best quality; expensive to find |
+
+### Text Augmentation
+
+| Technique | How | Use case |
+|-----------|-----|---------|
+| **Synonym replacement** | Replace words with synonyms | Simple; low risk |
+| **Back-translation** | Translate to French → back to English | Paraphrasing; maintains meaning |
+| **Random insertion / deletion** | Add or remove random words | Robustness |
+| **EDA (Easy Data Augmentation)** | Combine above techniques | Small datasets |
+| **LLM-based augmentation** | Use GPT to generate paraphrases | Highest quality; expensive |
+
+**Key principle:** Augmentations must be label-preserving. Flipping a chest X-ray horizontally would swap left/right lungs — a medical error.
+
+---
+
+## 15. Self-Supervised Learning
+
+Learn representations from unlabeled data by creating pretext tasks. The model learns features that transfer well to downstream tasks, eliminating the need for expensive labels.
+
+### Contrastive Learning (SimCLR, MoCo)
+
+```
+Image → Augmentation 1 → Encoder → z₁ ─┐
+     → Augmentation 2 → Encoder → z₂ ─┤→ Pull z₁, z₂ together (positive pair)
+                                        └→ Push z₁, z_other apart (negative pairs)
+```
+
+**SimCLR loss (NT-Xent):** Maximize agreement between different views of the same image, minimize agreement with other images in the batch.
+
+**Key insight:** Large batch sizes are critical (SimCLR uses 4096+) because you need many negative pairs. MoCo avoids this by maintaining a momentum-updated queue of negatives.
+
+### Non-Contrastive Methods (BYOL, SimSiam)
+
+Learn without explicit negative pairs. BYOL uses a momentum-updated target network:
+```
+Online: Image → augment → encoder → predictor → output
+Target: Image → augment → momentum_encoder → target
+Loss = ||output - target||²    (target is stop-gradient)
+```
+
+**Why it doesn't collapse:** The asymmetry between online (with predictor) and target (momentum-updated) networks prevents the trivial solution of mapping everything to the same vector.
+
+### Masked Image Modeling (MAE)
+
+Inspired by BERT's masked language modeling, but for images:
+```
+Image → mask 75% of patches → Encoder (on visible patches) → Decoder → reconstruct masked patches
+```
+
+Extremely data-efficient; works with standard ViT architecture.
+
+### Where Self-Supervised Learning Is Used
+
+- **Pre-training vision models** when labeled data is scarce (medical imaging, satellite)
+- **Pre-training language models** (BERT, GPT — these ARE self-supervised)
+- **Embedding learning** for retrieval and similarity search
+- **Foundation models** that transfer to many downstream tasks
+
+---
+
+## 16. Training at Scale
 
 ### Batch Size Effect
 
@@ -366,9 +569,43 @@ Store weights in FP32 but compute forward/backward passes in FP16:
 | When | Model fits in single GPU | Model too large for one GPU (LLMs) |
 | Sync | Gradient averaging (AllReduce) | Pipeline or tensor parallelism |
 
+### Gradient Accumulation
+
+When the desired batch size doesn't fit in GPU memory, accumulate gradients over multiple mini-batches before updating weights:
+
+```
+Effective batch size = mini_batch_size × accumulation_steps
+
+Step 1: Forward + backward (mini-batch 1) → accumulate gradients
+Step 2: Forward + backward (mini-batch 2) → accumulate gradients
+Step 3: Forward + backward (mini-batch 3) → accumulate gradients
+Step 4: optimizer.step() → update weights with averaged gradients
+         optimizer.zero_grad() → reset
+```
+
+This achieves the same gradient as a large batch without the memory cost. Trade-off: slower training (more forward/backward passes per update), but mathematically equivalent to large-batch training.
+
+### Grouped Query Attention (GQA) & Multi-Query Attention (MQA)
+
+Standard multi-head attention uses separate K, V projections per head. This creates a massive KV cache during inference.
+
+| Method | K/V heads | KV cache size | Quality | Used by |
+|--------|-----------|--------------|---------|---------|
+| **Multi-Head (MHA)** | h heads each | 100% (baseline) | Best | GPT-3, BERT |
+| **Multi-Query (MQA)** | 1 shared K/V | 1/h of baseline | Slight drop | PaLM, Falcon |
+| **Grouped Query (GQA)** | g groups share K/V | g/h of baseline | Near MHA | LLaMA-2 70B, Mistral |
+
+```
+MHA:  Q₁→K₁V₁, Q₂→K₂V₂, Q₃→K₃V₃, Q₄→K₄V₄   (4 separate KV)
+GQA:  Q₁→K₁V₁, Q₂→K₁V₁, Q₃→K₂V₂, Q₄→K₂V₂   (2 shared groups)
+MQA:  Q₁→K₁V₁, Q₂→K₁V₁, Q₃→K₁V₁, Q₄→K₁V₁   (1 shared KV)
+```
+
+**Why GQA is the current standard:** MQA saves the most memory but hurts quality. GQA with g = h/4 or h/8 preserves nearly all quality while cutting KV cache by 4-8×. Critical for serving large models efficiently.
+
 ---
 
-## 13. Common Failure Modes & Debugging
+## 17. Common Failure Modes & Debugging
 
 | Symptom | Likely cause | Fix |
 |---------|-------------|-----|
@@ -384,7 +621,7 @@ Store weights in FP32 but compute forward/backward passes in FP16:
 
 ---
 
-## 14. Transformers In Depth
+## 18. Transformers In Depth
 
 The Transformer is the most important architecture in modern deep learning. It powers every major LLM, vision model (ViT), and multimodal model. Unlike RNNs, it processes the entire sequence in parallel, making it highly GPU-efficient.
 
@@ -605,3 +842,15 @@ Key insight: with enough data, ViT matches or beats CNNs. CNNs have inductive bi
 
 **"Pre-Norm vs Post-Norm — what changed and why?"**
 → Original Transformer used Post-Norm (LayerNorm after residual), which is harder to train as gradients must flow through LayerNorm. Modern LLMs use Pre-Norm (LayerNorm before sublayer), which gives gradients a clean residual pathway and makes training more stable, especially at scale. Most use RMSNorm (no mean subtraction, faster) instead of full LayerNorm.
+
+**"Explain GANs and their training challenges"**
+→ Two networks in a minimax game: Generator creates fake data, Discriminator classifies real vs fake. Main challenges: mode collapse (generator produces limited variety), training instability (loss oscillates), vanishing gradients for the generator when the discriminator is too good. Fixes: Wasserstein loss (WGAN), spectral normalization, progressive growing. Diffusion models have largely replaced GANs for image generation due to more stable training and better diversity.
+
+**"What is knowledge distillation?"**
+→ Train a small student model to match a large teacher model's soft predictions (logits / temperature). Soft labels carry "dark knowledge" — a cat image that somewhat resembles a dog teaches more than the hard label "cat" alone. Temperature T > 1 softens the distribution to expose this knowledge. Used to create DistilBERT (60% of BERT's size, 97% performance), and to distill GPT-4 behavior into smaller task-specific models.
+
+**"What is GQA and why is it important?"**
+→ Grouped Query Attention shares K/V projections across groups of query heads instead of having unique K/V per head. LLaMA-2 70B uses 8 KV groups for 64 query heads, reducing KV cache by 8×. It's the sweet spot between Multi-Head Attention (best quality, huge KV cache) and Multi-Query Attention (smallest KV cache, quality drop). Critical for efficient LLM serving.
+
+**"How does self-supervised learning work?"**
+→ Learn representations from unlabeled data via pretext tasks. Contrastive methods (SimCLR): pull augmented views of the same image together, push different images apart. Masked methods (MAE): mask 75% of image patches, train to reconstruct. Language models (BERT, GPT) are inherently self-supervised — predicting masked/next tokens. Self-supervised pre-training enables foundation models that transfer to many downstream tasks with minimal labeled data.
